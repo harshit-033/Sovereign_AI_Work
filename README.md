@@ -1,236 +1,341 @@
 # SIH Local AI Workbench
 
-An offline Windows AI workbench for local LLM chat, digital PDF analysis, OCR of scanned PDFs, and local retrieval-augmented generation (RAG). It includes a Tkinter desktop client and a FastAPI web server for multiple clients on a trusted LAN.
+SIH Local AI Workbench is a Windows application for chatting with a local large language model, analyzing PDF files, extracting text from scanned documents with OCR, and searching a private local knowledge base.
 
-All inference, PDF extraction, OCR, account storage, and uploaded files stay on the host machine. The application does not require a cloud AI API.
+It includes:
 
-## Current Status
+- A browser-based application for one or more users on a trusted LAN.
+- A standalone Tkinter desktop application for local chat and document analysis.
+- Streaming answers, so text appears while the model is generating it.
+- PDF text extraction with Tesseract OCR fallback for scanned pages.
+- Knowledge Chat using local embeddings and ChromaDB.
+- A bounded Agent Task mode for local calculations, document search, and verified TXT/PDF reports.
 
-- Ollama chat with real token-by-token streaming
-- Persistent local ChromaDB knowledge base with Ollama embeddings
-- Knowledge Chat across multiple authorized indexed documents with trusted source/page metadata
-- Capability-based routing with explicit modes and deterministic Auto mode
-- Capability-specific model configuration while retaining `llama3.2:latest` defaults
-- Bounded offline Agent Task workflows with verified TXT/PDF outputs
-- Structured report composition with natural-language PDF/TXT generation
-- Native PDF extraction with page-aware Tesseract OCR fallback
-- Mixed digital/scanned PDF support and bounded document context
-- Responsive browser UI and standalone Tkinter UI
-- Admin/user RBAC with isolated sessions and documents
-- HttpOnly browser sessions, login throttling, security headers, and strict upload validation
-- Scrypt password hashing with transparent migration of legacy PBKDF2 hashes
-- Single active admin session and multiple concurrent normal-user sessions
-- Deterministic, OCR, live-model, API, RBAC, isolation, and adversarial security tests
+All normal inference and document processing runs on the host computer through Ollama. No cloud AI API is required at runtime.
+
+## Contents
+
+- [How it works](#how-it-works)
+- [Requirements](#requirements)
+- [Install](#install)
+- [Start the application](#start-the-application)
+- [Use the application](#use-the-application)
+- [Use from another PC](#use-from-another-pc)
+- [Configuration](#configuration)
+- [Run tests](#run-tests)
+- [Project structure](#project-structure)
+- [Security and privacy](#security-and-privacy)
+- [Troubleshooting](#troubleshooting)
+- [Documentation](#documentation)
+
+## How it works
+
+~~~
+Browser or desktop client
+          |
+          v
+ FastAPI server or app.py
+          |
+          +--> Ollama local chat model
+          +--> PDF extraction and Tesseract OCR
+          +--> ChromaDB local knowledge base
+          +--> Bounded Agent Task tools
+~~~
+
+The browser application is the full-featured interface. The desktop application keeps a smaller local workflow for general chat and direct PDF analysis.
 
 ## Requirements
 
-- Windows 10 or 11
-- Python 3.10 or newer
-- [Ollama](https://ollama.com/) with `llama3.2:latest`
-- Ollama embedding model `nomic-embed-text:latest` for Knowledge Chat
-- Tesseract OCR, normally installed at `C:\Program Files\Tesseract-OCR`
+- Windows 10 or Windows 11.
+- Python 3.10 or newer.
+- Ollama installed and running: https://ollama.com/
+- The Ollama chat model llama3.2:latest.
+- The Ollama embedding model nomic-embed-text:latest for Knowledge Chat.
+- Tesseract OCR for scanned PDFs. The application looks for a standard Windows installation such as C:\Program Files\Tesseract-OCR.
 
-Install the local model once:
+The first model download requires internet access. After the models and Python packages are installed, normal use can be offline.
 
-```powershell
+Download the local models once:
+
+~~~
 ollama pull llama3.2
 ollama pull nomic-embed-text
-```
+~~~
 
-## Clone And Install
+Confirm that Ollama is available before starting the application:
 
-```powershell
+~~~
+ollama list
+~~~
+
+## Install
+
+Clone the repository and create a virtual environment:
+
+~~~
 git clone https://github.com/harshit-033/SIH_PROJECT_1.git
 cd SIH_PROJECT_1
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
-```
+~~~
 
-Dependencies are pinned in `requirements.txt`. The verified environment currently uses Python 3.14.3, but the application code supports Python 3.10+.
+If PowerShell does not allow virtual-environment activation, use the virtual-environment Python directly in every command:
 
-## Start The Web App
+~~~
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+~~~
 
-```powershell
+Python dependencies are pinned in requirements.txt. The project currently uses Python 3.14.3 in its verified development environment, while the code targets Python 3.10 or newer.
+
+## Start the application
+
+### Browser application
+
+From the project root:
+
+~~~
 .\.venv\Scripts\python.exe run_server.py
-```
+~~~
 
-You can also double-click `run_server.bat`. Open `http://localhost:8000` on the host, or use the LAN URL printed in the terminal from a client on the same trusted network.
+You can also run run_server.bat.
 
-For another PC, use the host computer's private IPv4 address, not `127.0.0.1`. Run `ipconfig` on the host and use the `IPv4 Address` for the active Wi-Fi/Ethernet adapter, for example `http://192.168.1.23:8000`. If automatic detection prints `127.0.0.1`, set the address before starting:
+The terminal prints the local and LAN URLs. Open the local URL on the host computer:
 
-```powershell
-$env:SIH_LAN_IP = "192.168.1.23"
-.\.venv\Scripts\python.exe run_server.py
-```
+~~~
+http://localhost:8000
+~~~
 
-If the address is correct but another PC still cannot connect, allow TCP port 8000 through Windows Firewall on the host for the Private network profile from an Administrator PowerShell:
+On the first run, the terminal prints a one-time generated administrator password. There are no hardcoded default passwords or demo accounts. You can set the first administrator credentials before starting the server:
 
-```powershell
-New-NetFirewallRule -DisplayName "SIH Local AI Workbench 8000" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private
-```
-
-There are no hardcoded default passwords or demo accounts. On a completely fresh install, the terminal prints a one-time generated admin password. To choose the initial credentials before the first start:
-
-```powershell
+~~~
 $env:SIH_BOOTSTRAP_ADMIN_USERNAME = "admin"
 $env:SIH_BOOTSTRAP_ADMIN_PASSWORD = "Use-A-Long-Unique-Password"
 .\.venv\Scripts\python.exe run_server.py
-```
+~~~
 
-Change the generated password immediately from `Admin Dashboard > My Account`. The account database is stored outside Git at `%LOCALAPPDATA%\SIHLocalAI\users.json`.
+### Desktop application
 
-## Start The Desktop App
+To start the Tkinter desktop client:
 
-```powershell
+~~~
 .\.venv\Scripts\python.exe app.py
-```
+~~~
 
-You can also double-click `run_chat_app.bat`. Type a question and press Enter to send. Use Shift+Enter for a new line. The answer appears as the local model generates it. Attach a PDF to switch into Document Analysis mode.
+You can also run run_chat_app.bat.
 
-Select `Knowledge Chat` to open the local knowledge base. Create or choose a collection, select `Index PDF`, and wait for the document status to become `INDEXED`. Knowledge Chat retrieves only your own authorized chunks and displays source filenames, pages, and native/OCR provenance beneath the answer.
+The desktop client supports general chat and direct PDF document analysis. It uses the local Ollama model and streams the answer as it is generated.
 
-The browser also provides `Auto`. Auto routes each request to General Chat, Document Analysis, or Knowledge RAG using the request wording and only session-safe metadata. A selected PDF is used for document-specific wording; cross-document wording such as “search my reports” uses owner-scoped Knowledge RAG. Every streamed answer shows the selected capability. Explicit modes remain available for predictable behavior.
+## Use the application
 
-## Security Configuration
+### General Chat
 
-The browser server is same-origin only. API documentation is disabled by default, tokens are not accepted in URLs, browser authentication uses an HttpOnly SameSite cookie, and uploaded files are limited to 25 MB and 80 pages.
+1. Sign in to the browser application, or open the desktop application.
+2. Select General Chat.
+3. Type a question and press Send.
+4. Read the answer while it streams from the local model.
 
-Plain HTTP is suitable only for localhost or a trusted private LAN. To enable HTTPS, provide both certificate paths:
+### Document Analysis
 
-```powershell
-$env:SIH_TLS_CERT_FILE = "C:\certs\server.crt"
-$env:SIH_TLS_KEY_FILE = "C:\certs\server.key"
+1. Select Document Analysis.
+2. Upload or drag and drop a PDF file.
+3. Wait for the document to finish processing.
+4. Ask questions about the selected document.
+
+Digital PDFs use native text extraction. Scanned pages are rendered locally and processed with Tesseract OCR. Mixed PDFs can use both methods, page by page.
+
+### Knowledge Chat
+
+Knowledge Chat searches documents that have been indexed into the local knowledge base.
+
+1. Open Knowledge Chat.
+2. Create or select a collection.
+3. Upload a PDF or drag and drop it into the knowledge panel.
+4. Select Index PDF and wait for the status to become INDEXED.
+5. Ask a question about one or more indexed documents.
+
+Answers include source filenames, page numbers, and whether the source text came from native extraction or OCR. Each user's knowledge documents are isolated from other users.
+
+### Auto mode
+
+Auto chooses a capability based on the request:
+
+- Ordinary questions use General Chat.
+- Questions about the selected PDF use Document Analysis.
+- Cross-document requests such as Search my maintenance reports use Knowledge Chat.
+- Clear multi-step requests can use Agent Task.
+
+Explicit modes remain available when you want predictable behavior.
+
+### Agent Task
+
+Agent Task is a bounded local workflow for requests such as:
+
+~~~
+Calculate 18 * 24 and save the result as a TXT file.
+Summarize my indexed reports and create a PDF.
+~~~
+
+It can search authorized knowledge documents, inspect document metadata, perform restricted arithmetic, and generate verified TXT/PDF files. It cannot execute shell commands, arbitrary Python, network requests, browser actions, or unrestricted filesystem operations.
+
+## Use from another PC
+
+Both computers must be on the same trusted private network.
+
+1. Start the server on the host computer.
+2. Run ipconfig on the host and find the IPv4 address of the active Wi-Fi or Ethernet adapter.
+3. From the other PC, open http://HOST_IP:8000, replacing HOST_IP with that address. For example: http://192.168.1.23:8000.
+
+Do not use 127.0.0.1 from another PC. It always refers to the computer making the request.
+
+If the launcher cannot detect the correct address, set it explicitly before starting:
+
+~~~
+$env:SIH_LAN_IP = "192.168.1.23"
 .\.venv\Scripts\python.exe run_server.py
-```
+~~~
 
-Optional configuration:
+If Windows Firewall blocks the connection, allow the server port on the host. Run this from an Administrator PowerShell only on a trusted private network:
+
+~~~
+New-NetFirewallRule -DisplayName "SIH Local AI Workbench 8000" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private
+~~~
+
+Plain HTTP should only be used on localhost or a trusted private LAN. For an untrusted network, configure HTTPS using the TLS variables below.
+
+## Configuration
+
+Set environment variables in PowerShell before starting the server. The most useful options are:
 
 | Variable | Purpose | Default |
-| :--- | :--- | :--- |
-| `SIH_MODEL_NAME` | Ollama model name | `llama3.2:latest` |
-| `SIH_ROUTING_ENABLED` | Enable the capability router | `1` |
-| `SIH_AUTO_ROUTING_ENABLED` | Enable the browser `Auto` mode | `1` |
-| `SIH_GENERAL_MODEL` | Model used by `GENERAL_CHAT` | `SIH_MODEL_NAME` fallback |
-| `SIH_DOCUMENT_MODEL` | Model used by `DOCUMENT_ANALYSIS` | `SIH_MODEL_NAME` fallback |
-| `SIH_RAG_MODEL` | Model used by `KNOWLEDGE_RAG` | `SIH_MODEL_NAME` fallback |
-| `SIH_SERVER_HOST` | Bind address | `0.0.0.0` |
-| `SIH_SERVER_PORT` | Server port | `8000` |
-| `SIH_LAN_IP` | Override detected private LAN IPv4 address | Auto-detected |
-| `SIH_ENABLE_API_DOCS` | Set to `1` to expose `/docs` | Disabled |
-| `SIH_USER_STORE_PATH` | Override account database path | `%LOCALAPPDATA%\SIHLocalAI\users.json` |
-| `SIH_UPLOAD_DIR` | Override temporary upload directory | Project `uploads` directory |
-| `SIH_COOKIE_SECURE` | Set to `1` when HTTPS terminates upstream | Auto-enabled for direct HTTPS |
-| `SIH_RAG_ENABLED` | Enable Knowledge Chat and local indexing | `1` |
-| `SIH_EMBED_MODEL` | Ollama embedding model | `nomic-embed-text:latest` |
-| `SIH_RAG_TOP_K` | Maximum retrieved chunks | `8` |
-| `SIH_RAG_CHUNK_SIZE` | Chunk target size in characters | `1200` |
-| `SIH_RAG_CHUNK_OVERLAP` | Chunk overlap in characters | `180` |
-| `SIH_RAG_CONTEXT_LIMIT` | Maximum retrieved prompt context | `12000` |
-| `SIH_RAG_STORAGE_PATH` | Persistent RAG root | Project `data/rag` directory |
-| `SIH_AGENT_MODEL` | Model name advertised for Agent Task routing | `llama3.2:latest` |
-| `SIH_AGENT_ENABLED` | Enable Agent Task routing and execution | `1` |
-| `SIH_AGENT_MAX_STEPS` | Maximum planned agent steps | `8` |
-| `SIH_AGENT_MAX_TOOL_CALLS` | Maximum tool calls per task | `12` |
-| `SIH_AGENT_MAX_EXECUTION_SECONDS` | Maximum agent runtime | `120` |
-| `SIH_AGENT_MAX_OUTPUT_CHARS` | Maximum generated report content | `32000` |
-| `SIH_AGENT_MAX_FILE_BYTES` | Maximum generated file size | `2000000` |
-| `SIH_AGENT_OUTPUT_DIR` | Agent output root | Project `data/agent_outputs` directory |
+| --- | --- | --- |
+| SIH_MODEL_NAME | Default Ollama chat model | llama3.2:latest |
+| SIH_EMBED_MODEL | Ollama embedding model | nomic-embed-text:latest |
+| SIH_SERVER_HOST | Server bind address | 0.0.0.0 |
+| SIH_SERVER_PORT | Server port | 8000 |
+| SIH_LAN_IP | Override detected private LAN IP | Auto-detected |
+| SIH_USER_STORE_PATH | Account JSON file location | %LOCALAPPDATA%\SIHLocalAI\users.json |
+| SIH_UPLOAD_DIR | Temporary uploaded-file directory | Project uploads directory |
+| SIH_RAG_STORAGE_PATH | ChromaDB storage directory | Project data/rag directory |
+| SIH_RAG_ENABLED | Enable Knowledge Chat | 1 |
+| SIH_AGENT_ENABLED | Enable Agent Task | 1 |
+| SIH_ENABLE_API_DOCS | Enable /docs and OpenAPI | Disabled |
+| SIH_TLS_CERT_FILE | HTTPS certificate path | Not set |
+| SIH_TLS_KEY_FILE | HTTPS private-key path | Not set |
 
-## Run Tests
+Example HTTPS configuration:
 
-Generate the deterministic PDF fixtures first:
+~~~
+$env:SIH_TLS_CERT_FILE = "C:\certs\server.crt"
+$env:SIH_TLS_KEY_FILE = "C:\certs\server.key"
+$env:SIH_COOKIE_SECURE = "1"
+.\.venv\Scripts\python.exe run_server.py
+~~~
 
-```powershell
+For the complete configuration list and server details, see SERVER_GUIDE.md.
+
+## Data locations
+
+- Accounts: %LOCALAPPDATA%\SIHLocalAI\users.json.
+- Temporary direct-analysis uploads: uploads by default.
+- Persistent Knowledge Chat files, vectors, and metadata: data/rag by default.
+- Agent outputs: data/agent_outputs/<session_id> by default.
+
+The project does not use PostgreSQL, MySQL, MongoDB, or another SQL database. Account data is stored in JSON, and document embeddings are stored locally in ChromaDB.
+
+## Run tests
+
+Create the deterministic PDF fixtures first:
+
+~~~
 .\.venv\Scripts\python.exe .\tests\create_synthetic_pdfs.py
-```
+~~~
 
-Run the full suite:
+Run the test suite:
 
-```powershell
-$tests = @(
-  "test_document_workflow.py", "test_app_state.py", "test_demo_runs.py",
-  "test_concurrency_queue.py", "test_api_server.py",
-  "test_security_file_handling.py", "test_security_regressions.py",
-  "test_rbac_auth.py", "test_admin_profile.py", "test_session_isolation.py",
-  "test_lan_server_e2e.py", "test_model_document_qa.py", "test_rag.py",
-  "test_routing.py", "test_agent.py"
-)
-foreach ($test in $tests) {
-  .\.venv\Scripts\python.exe ".\tests\$test"
-  if ($LASTEXITCODE -ne 0) { throw "$test failed" }
+~~~
+Get-ChildItem .\tests\test_*.py | ForEach-Object {
+    & .\.venv\Scripts\python.exe $_.FullName
+    if ($LASTEXITCODE -ne 0) { throw "$($_.Name) failed" }
 }
-```
+~~~
 
-`test_model_document_qa.py` uses the real local Ollama model. `test_agent.py` covers the allowlist, planner, policy, approval, verification, output, isolation, audit, API, and SSE lifecycle. Server tests use isolated temporary account, upload, RAG, and agent-output directories and never modify production accounts.
+The model QA test uses the real local Ollama model. Make sure Ollama is running and both models are installed before running the full suite.
 
-Audit installed Python packages:
+To audit installed Python packages:
 
-```powershell
+~~~
 .\.venv\Scripts\python.exe -m pip install pip-audit
 .\.venv\Scripts\python.exe -m pip_audit -r requirements.txt
-```
+~~~
 
-## Project Layout
+## Project structure
 
-```text
-app.py                       Tkinter desktop application
-core/                        Authentication, sessions, queue, files, AI services
-document/                    PDF extraction, OCR, context, and prompt handling
-rag/                         Chunking, local embeddings, ChromaDB, metadata, and retrieval
-routing/                     Capability registry, classifier, router, config, and handlers
-agent/                       Bounded planner, allowlist, policy, executor, verifier, approvals, audit, outputs
-server/main.py               FastAPI routes and streaming transport
-static/                      Responsive browser application
-tests/                       Functional, OCR, model, isolation, and security checks
-run_server.py                LAN/HTTPS server launcher
-SERVER_GUIDE.md              Server operation and security reference
-DOCUMENT_WORKFLOW_CHECKLIST.md
-```
+~~~
+app.py                    Tkinter desktop client
+core/                     Authentication, sessions, files, queues, and AI services
+document/                 PDF extraction, OCR, context, and prompts
+rag/                      Chunking, embeddings, ChromaDB, and retrieval
+routing/                  Capability detection and request routing
+agent/                    Bounded planning, tools, approvals, audit, and outputs
+server/                   FastAPI routes, authentication, and streaming APIs
+static/                   Browser HTML, CSS, and JavaScript
+tests/                    Functional, OCR, model, isolation, and security tests
+run_server.py             LAN and HTTPS server launcher
+requirements.txt          Pinned Python dependencies
+SERVER_GUIDE.md           Detailed server and security reference
+FINAL_TECH_STACK.txt      Current technology-stack inventory
+~~~
 
-## Operational Notes
+## Security and privacy
 
-- Uploaded PDFs are temporary and are deleted when the session is cleared or logged out.
-- Knowledge-base source PDFs, vectors, and metadata persist under `data/rag` by default. They are private to their owning user; deleting the user removes their indexed documents and source files.
-- The duplicate policy is deterministic: the same owner, collection, and SHA-256 file hash updates and re-indexes the existing document ID.
-- Knowledge collections are owner-private in Phase 5. Admin users do not implicitly see other users' private documents.
-- The server serializes local inference by default to protect host CPU/GPU capacity.
-- Normal users may have multiple sessions; an admin account is limited to one active session.
+- Passwords are hashed with scrypt. Legacy PBKDF2 hashes are migrated after a successful login.
+- Browser sessions use random server-side tokens in HttpOnly, SameSite cookies.
+- Tokens are not stored in browser storage or accepted in URLs.
+- Login attempts, uploads, document sizes, OCR work, model context, and agent execution are bounded.
+- User accounts, sessions, direct-analysis documents, and Knowledge Chat collections are isolated.
+- PDF content is treated as untrusted evidence. Instructions inside uploaded documents are not treated as application instructions.
+- API documentation is disabled by default.
 - Use HTTPS before sending credentials over an untrusted network.
-- Phase 6 routing is browser/server-first. The Tkinter client remains on its existing General Chat and direct Document Analysis paths; it is not required to use Auto.
-- Phase 7 Agent Task is browser/server-first. The Tkinter client keeps its existing stable paths; the Agent Task browser UI and API are the supported agent surface.
 
-## Agent Task
+The current pinned ChromaDB version has unresolved advisories reported by pip-audit during the latest project verification. Review PHASE7_AGENT_REPORT.md before production deployment.
 
-Agent Task is an offline, deterministic, bounded workflow capability. It is available as an explicit browser mode and Auto can select it for requests that clearly require multiple local operations, such as calculating a value and saving a TXT report or searching the private knowledge base and generating a PDF summary. Ordinary questions continue to use General Chat, Document Analysis, or Knowledge RAG.
+## Troubleshooting
 
-The agent is allowlist-only. Its seven registered tools are `search_knowledge`, `list_documents`, `get_document_metadata`, `retrieve_document_information`, `calculate`, `generate_txt`, and `generate_pdf`. It cannot execute shell commands, arbitrary Python, subprocesses, network requests, browser actions, package installation, or unrestricted filesystem operations. Arithmetic uses a restricted AST visitor and generated files are written only beneath `data/agent_outputs/<session_id>` (or `SIH_AGENT_OUTPUT_DIR`).
+### Ollama connection error
 
-Each task emits `agent_started`, `plan_created`, `tool_started`, `tool_completed`, `verification_completed`, `approval_required`, and `final_result` progress events. Generated TXT files are read back and PDFs are checked for a PDF signature before download. Approval, audit, and output endpoints are authenticated and session/user scoped:
+Make sure Ollama is running and verify the installed models:
 
-```text
-GET  /api/agent/approvals
-POST /api/agent/approvals/{approval_id}
-GET  /api/agent/audit
-GET  /api/agent/outputs/{output_id}
-```
+~~~
+ollama list
+~~~
 
-Agent audit records contain task/tool/status metadata only. Prompts, passwords, tokens, private document text, and tool payload content are not written to the audit log. Agent outputs and audit records are cleared with the owning session.
+If a custom model is installed, set SIH_MODEL_NAME before starting the server.
 
-Report requests are composed before generation, so retrieved evidence is not dumped directly into a file. Requests such as `Summarize this document and save it as PDF`, `create a text summary`, and the common `sumarize and generate a PDF` variation are supported. Reports include a title, overview, key findings, and sources when evidence is available. PDFs use wrapped text, readable spacing, page numbers, and verified page/content checks; insufficient evidence is stated rather than fabricated.
+### OCR is unavailable
 
-## Capability Routing
+Install Tesseract OCR for Windows and confirm that tesseract.exe is available at the expected installation path. Restart the application after installation.
 
-The router sits after authentication and before the existing handlers:
+### Knowledge Chat cannot index a PDF
 
-```text
-User request -> authentication -> capability router -> existing handler -> local Ollama
-                                      |                  | General Chat
-                                      |                  | Document Analysis + OCR context
-                                      |                  | Knowledge RAG + owner-filtered ChromaDB
-```
+Check that nomic-embed-text:latest is installed and that SIH_RAG_ENABLED is not set to 0. The server health page at /health reports whether the LLM, OCR, and RAG services are ready.
 
-Explicit mode is authoritative. Auto uses this deterministic precedence: strong cross-document intent, selected-document wording, selected-document ambiguity, then General Chat fallback. The classifier receives user/session identifiers, selected mode, selected document ID, collection ID, availability, and the message; it never receives private document text or retrieved chunks. `POST /api/route` returns a safe capability explanation without performing retrieval.
+### Another PC cannot open the LAN URL
 
-Capability and model are separate. The default mapping is `GENERAL_CHAT`, `DOCUMENT_ANALYSIS`, and `KNOWLEDGE_RAG` to `llama3.2:latest`; set the three capability variables independently when specialized local models are available. If `SIH_MODEL_NAME` is set, it is the fallback for all three unset capability variables. No cloud model or automatic model substitution is used.
+Use the host's private IPv4 address, not 127.0.0.1. Confirm that both computers are on the same network, the server is bound to 0.0.0.0, and Windows Firewall allows the selected port.
+
+### The browser is unavailable after a restart
+
+Start run_server.py again and open the URL printed in the terminal. The server must remain running while the browser application is in use.
+
+## Documentation
+
+- SERVER_GUIDE.md: server operation, roles, API behavior, security, and advanced configuration.
+- DOCUMENT_WORKFLOW_CHECKLIST.md: document and OCR workflow checks.
+- FINAL_TECH_STACK.txt: exact current technology stack and versions.
+- PHASE7_AGENT_REPORT.md: latest Agent Task implementation and verification status.
+
+## License
+
+No license file is currently included in this repository. Add a license before distributing the project publicly.
