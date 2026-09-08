@@ -336,6 +336,4 @@ Start run_server.py again and open the URL printed in the terminal. The server m
 - FINAL_TECH_STACK.txt: exact current technology stack and versions.
 - PHASE7_AGENT_REPORT.md: latest Agent Task implementation and verification status.
 
-## License
 
-No license file is currently included in this repository. Add a license before distributing the project publicly.
