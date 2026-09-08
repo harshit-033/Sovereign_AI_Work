@@ -1,0 +1,209 @@
+SIH LOCAL AI WORKBENCH
+FINAL TECH STACK
+=================
+
+Generated: 2026-09-05
+
+PROJECT SUMMARY
+---------------
+Project type: Offline-first, local AI document assistant and knowledge workbench
+Primary language: Python
+Runtime target: Python 3.10 or newer
+Verified development runtime: Python 3.14.3 in the project virtual environment
+Internet requirement: No internet or cloud AI service is required at runtime
+
+The application provides general chat, document analysis, OCR, local knowledge
+chat with retrieval-augmented generation (RAG), streaming responses, and bounded
+agent tasks that can create verified TXT and PDF reports.
+
+1. LOCAL AI / LLM
+-----------------
+LLM runtime: Ollama
+Ollama Python client: ollama 0.6.2
+Default chat model: llama3.2:latest
+Default embedding model: nomic-embed-text:latest
+Default Ollama endpoint: http://127.0.0.1:11434
+
+The models run locally. The project does not depend on OpenAI, Gemini, or any
+other hosted model API.
+
+2. BACKEND API
+-------------
+Web framework: FastAPI 0.141.1
+ASGI server: Uvicorn 0.52.4
+Data validation and request models: Pydantic 2.13.5
+Multipart upload support: python-multipart 0.0.32
+Streaming transport: Server-Sent Events (SSE)
+HTTP client dependency: httpx2 2.12.0
+System and LAN discovery: psutil 7.2.2, Python socket and ipaddress modules
+
+The backend is implemented in server/main.py and is started through
+run_server.py. It exposes health, chat, document, RAG, authentication, agent,
+approval, audit, and generated-output endpoints.
+
+3. DESKTOP APPLICATION
+----------------------
+Desktop UI toolkit: Tkinter and ttk from the Python standard library
+Desktop entry point: app.py
+Background work: Python threading and queue modules
+Desktop document/OCR workflow: local document package and Ollama client
+
+4. BROWSER UI
+------------
+Markup: HTML5
+Styling: CSS3
+Client logic: Vanilla JavaScript (ES6+)
+Frontend files: static/index.html, static/app.css, static/app.js
+Frontend build tooling: None
+Node.js/npm requirement: None
+
+The browser UI is served by FastAPI and supports switchable chat modes,
+knowledge chat, drag-and-drop PDF upload, responsive layouts, streaming text,
+agent tasks, and generated-file download.
+
+5. DOCUMENT PROCESSING AND OCR
+------------------------------
+PDF parsing and rendering: PyMuPDF 1.28.2
+OCR integration: pytesseract 0.3.13
+Image processing and rasterization support: Pillow 12.3.0
+OCR engine: Tesseract OCR external installation
+Supported document workflow: native PDF text extraction with OCR fallback
+
+Tesseract is an operating-system dependency and must be installed separately
+from the Python packages. Its executable must be available to the application
+or configured through the existing document/OCR settings.
+
+6. RETRIEVAL-AUGMENTED GENERATION (RAG)
+---------------------------------------
+Vector database: ChromaDB 1.5.9
+Persistence: Local on-disk ChromaDB storage
+Embedding generation: Ollama nomic-embed-text:latest
+RAG package: rag/
+Default RAG storage: data/rag/
+Isolation model: Owner/session-scoped collections and metadata
+
+There is no PostgreSQL, MySQL, MongoDB, SQLAlchemy, or relational database in
+the current implementation.
+
+7. AGENT TASKS AND REPORT GENERATION
+------------------------------------
+Agent package: agent/
+Execution model: Deterministic, bounded planner and executor
+Allowed tools:
+  - search_knowledge
+  - list_documents
+  - get_document_metadata
+  - retrieve_document_information
+  - calculate
+  - generate_txt
+  - generate_pdf
+
+Calculator safety: AST-restricted arithmetic evaluation
+Report composition: Structured ReportComposer
+Report formats: Plain TXT and PDF
+Output verification: Content and file verification before download
+Output directory: data/agent_outputs/<session_id>/
+Output directory override: SIH_AGENT_OUTPUT_DIR
+
+The agent cannot execute shell commands, PowerShell, arbitrary Python, eval,
+subprocesses, browser automation, network tools, installers, or unrestricted
+filesystem operations.
+
+8. AUTHENTICATION AND SECURITY
+------------------------------
+User store: Local JSON file
+Default user-store location: %LOCALAPPDATA%/SIHLocalAI/users.json
+Password hashing: scrypt
+Legacy password migration: PBKDF2 migration support
+Session mechanism: Random server-side session tokens in HttpOnly cookies
+Cookie policy: SameSite=Strict and secure configuration support
+Authorization: Role-based access control and ownership checks
+Additional controls:
+  - Login rate limiting
+  - Request and upload validation
+  - Security response headers
+  - Content Security Policy
+  - API documentation disabled by default
+  - No authentication tokens in URLs
+  - Bounded document, context, stream, and agent limits
+
+Default safety limits include a 25 MB upload limit, an 80-page PDF limit, and
+bounded context and generation sizes. Agent execution defaults include limits
+of 8 steps, 12 tool calls, 120 seconds, 32,000 content characters, and 2 MB
+generated files.
+
+9. STORAGE AND DATA MODEL
+--------------------------
+User and account data: JSON file in the local application-data directory
+Uploaded documents: Local uploads directory, configurable by existing settings
+Vector and document metadata: Persistent ChromaDB files under data/rag/
+Agent-generated files: data/agent_outputs/<session_id>/
+Relational schema: None
+ORM: None
+
+The project uses file-based local persistence and ChromaDB rather than a
+centralized SQL database.
+
+10. NETWORKING AND DEPLOYMENT
+-----------------------------
+Default bind address: 0.0.0.0
+Default server port: 8000
+Local access URL: http://localhost:8000
+LAN access URL: http://<host-lan-ip>:8000
+Current server launcher: run_server.py
+TLS support: Optional certificate and key configuration
+TLS environment variables: SIH_TLS_CERT_FILE and SIH_TLS_KEY_FILE
+
+The server can be accessed from another device on the same LAN when the host
+firewall allows the selected port and the client uses the host LAN IP rather
+than 127.0.0.1.
+
+11. PROJECT ARCHITECTURE
+------------------------
+app.py                 Tkinter desktop client
+core/                  Shared application state and core helpers
+document/              PDF extraction, OCR, and document processing
+rag/                   ChromaDB indexing and knowledge retrieval
+routing/               Mode classification and request routing
+agent/                 Bounded agent planning, tools, approvals, audit, and outputs
+server/                FastAPI application, auth, APIs, and security controls
+static/                Browser UI HTML, CSS, and JavaScript
+tests/                 Unit, integration, security, LAN, and workflow tests
+run_server.py          Server launcher and LAN/TLS configuration
+
+12. PINNED PYTHON DEPENDENCIES
+------------------------------
+ollama==0.6.2
+pillow==12.3.0
+pymupdf==1.28.2
+pytesseract==0.3.13
+fastapi==0.141.1
+httpx2==2.12.0
+uvicorn[standard]==0.52.4
+python-multipart==0.0.32
+pydantic==2.13.5
+psutil==7.2.2
+chromadb==1.5.9
+
+13. VERIFICATION STATUS
+-----------------------
+The current implementation has passed the project test suite covering agent
+tasks, routing, RAG, security, authentication/RBAC, document workflows,
+concurrency, API behavior, LAN server behavior, model/document QA, desktop
+state, and demo execution. Python compilation and JavaScript syntax checks also
+passed during the latest verification.
+
+Known dependency caveat: the current ChromaDB pin (1.5.9) is reported by
+pip-audit with four unresolved advisories at the time of verification:
+PYSEC-2026-311, CVE-2026-45830, CVE-2026-45833, and CVE-2026-45831. The package
+index did not provide a newer fixed ChromaDB release during that verification.
+This is the remaining dependency-security limitation and should be reviewed
+before production deployment.
+
+14. IMPORTANT NON-TECHNOLOGY NOTES
+----------------------------------
+The application is designed for local, privacy-preserving use. Model files,
+Tesseract, Python dependencies, and local data must exist on the machine before
+offline operation can begin. The first-time setup may therefore require a
+one-time installation/download step, but normal application use is local.
+

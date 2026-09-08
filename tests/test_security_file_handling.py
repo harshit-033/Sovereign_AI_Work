@@ -9,14 +9,14 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from core.file_handler import FileHandler
 from create_synthetic_pdfs import create_corrupted_pdf
-from server.main import app
+from server_test_support import ADMIN_PASSWORD, app
 
 
 def test_security_and_file_handling():
     client = TestClient(app)
 
     # Login
-    login_res = client.post("/api/auth/login", json={"username": "admin", "password": "admin123"})
+    login_res = client.post("/api/auth/login", json={"username": "admin", "password": ADMIN_PASSWORD})
     token = login_res.json()["token"]
     headers = {"Authorization": f"Bearer {token}"}
 

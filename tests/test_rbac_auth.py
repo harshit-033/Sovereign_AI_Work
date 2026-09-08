@@ -13,7 +13,12 @@ from core.auth import AuthService, hash_password
 from core.models import UserRole
 from core.user_store import UserStore
 from create_synthetic_pdfs import create_inspection_report
-from server.main import app, user_store as server_user_store
+from server_test_support import (
+    ADMIN_PASSWORD,
+    USER1_PASSWORD,
+    app,
+    user_store as server_user_store,
+)
 
 
 def test_bootstrap_creates_first_admin():
@@ -48,7 +53,7 @@ def test_rbac_matrix_flow():
     client = TestClient(app)
 
     # 1. Admin login success
-    admin_login = client.post("/api/auth/login", json={"username": "admin", "password": "admin123"})
+    admin_login = client.post("/api/auth/login", json={"username": "admin", "password": ADMIN_PASSWORD})
     assert admin_login.status_code == 200
     admin_data = admin_login.json()
     assert admin_data["role"] == "admin"
@@ -57,7 +62,7 @@ def test_rbac_matrix_flow():
     print("  - test_admin_login_success: PASS")
 
     # 2. User login success
-    user_login = client.post("/api/auth/login", json={"username": "user1", "password": "pass123"})
+    user_login = client.post("/api/auth/login", json={"username": "user1", "password": USER1_PASSWORD})
     assert user_login.status_code == 200
     user_data = user_login.json()
     assert user_data["role"] == "user"
@@ -162,11 +167,12 @@ def test_rbac_matrix_flow():
     # 14. Inactive user rejected
     # Create another user and manually deactivate in store
     inactive_uname = f"inactive_{uuid.uuid4().hex[:6]}"
-    temp_u = server_user_store.create_user(inactive_uname, hash_password("pass123"))
+    inactive_password = "Inactive-Test-2026!"
+    temp_u = server_user_store.create_user(inactive_uname, hash_password(inactive_password))
     server_user_store.deactivate_user(temp_u.id)
     inactive_login = client.post(
         "/api/auth/login",
-        json={"username": inactive_uname, "password": "pass123"},
+        json={"username": inactive_uname, "password": inactive_password},
     )
     assert inactive_login.status_code == 401
     print("  - test_inactive_user_rejected: PASS")

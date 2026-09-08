@@ -43,7 +43,11 @@ def extract_pdf(pdf_path: str, progress_callback=None) -> DocumentExtraction:
     failed_pages: list[int] = []
 
     try:
-        with pymupdf.open(pdf_path) as doc:
+        # Opening a bounded byte stream avoids lingering Windows file handles when
+        # MuPDF rejects malformed input, so failed temporary files can always be removed.
+        with pymupdf.open(stream=path.read_bytes(), filetype="pdf") as doc:
+            if doc.needs_pass:
+                raise ValueError("Password-protected PDFs are not supported.")
             page_count = doc.page_count
             if page_count <= 0:
                 raise ValueError("The selected PDF has no pages.")
@@ -111,6 +115,9 @@ def build_document_context(
         if included_blocks and used_chars + block_chars > char_budget:
             break
         if not included_blocks and block_chars > char_budget:
+            header = f"[Page {page.page_number} | {page.method}]\n"
+            included_blocks.append(header + page.text[: max(0, char_budget - len(header))])
+            used_chars = len(included_blocks[0])
             break
         included_blocks.append(block)
         used_chars += block_chars

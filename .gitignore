@@ -164,6 +164,11 @@ temp/
 # Large / Local Data
 # ================================
 
+# Runtime account and uploaded-document data
+data/users.json
+uploads/
+data/agent_outputs/
+
 # Uncomment if you don't want datasets/models in Git
 # data/
 # models/

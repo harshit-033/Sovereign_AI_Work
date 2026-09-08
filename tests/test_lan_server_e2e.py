@@ -8,7 +8,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from create_synthetic_pdfs import create_inspection_report, create_scanned_inspection_report
-from server.main import app
+from server_test_support import USER1_PASSWORD, USER2_PASSWORD, app
 
 
 def run_e2e_cycle(run_num: int):
@@ -19,13 +19,13 @@ def run_e2e_cycle(run_num: int):
     assert h.status_code == 200
 
     # 2. Client 1 login & workflow
-    res1 = client.post("/api/auth/login", json={"username": "user1", "password": "pass123"})
+    res1 = client.post("/api/auth/login", json={"username": "user1", "password": USER1_PASSWORD})
     assert res1.status_code == 200
     token1 = res1.json()["token"]
     h1 = {"Authorization": f"Bearer {token1}"}
 
     # 3. Client 2 login & workflow
-    res2 = client.post("/api/auth/login", json={"username": "user2", "password": "pass123"})
+    res2 = client.post("/api/auth/login", json={"username": "user2", "password": USER2_PASSWORD})
     assert res2.status_code == 200
     token2 = res2.json()["token"]
     h2 = {"Authorization": f"Bearer {token2}"}

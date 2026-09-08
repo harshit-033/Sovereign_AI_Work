@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SIH Local AI Workbench</title>
-  <link rel="stylesheet" href="/static/app.css" />
+  <link rel="stylesheet" href="/static/app.css?v=phase6-routing" />
 </head>
 <body>
   <!-- Login Modal -->
@@ -17,11 +17,11 @@
       <form id="login-form">
         <div class="form-group">
           <label for="username">Username</label>
-          <input type="text" id="username" value="admin" required autocomplete="username" />
+          <input type="text" id="username" required minlength="3" maxlength="50" autocomplete="username" autofocus />
         </div>
         <div class="form-group">
           <label for="password">Password</label>
-          <input type="password" id="password" value="admin123" required autocomplete="current-password" />
+          <input type="password" id="password" required maxlength="128" autocomplete="current-password" />
         </div>
         <div id="login-error" class="error-msg"></div>
         <button type="submit" class="btn btn-primary btn-block">Sign In</button>
@@ -39,11 +39,11 @@
       <form id="create-user-form">
         <div class="form-group">
           <label for="new-username">Username</label>
-          <input type="text" id="new-username" placeholder="e.g. user03" required autocomplete="off" />
+          <input type="text" id="new-username" placeholder="e.g. user03" required minlength="3" maxlength="50" autocomplete="off" />
         </div>
         <div class="form-group">
           <label for="new-password">Initial Password</label>
-          <input type="password" id="new-password" placeholder="At least 4 characters" required autocomplete="new-password" />
+          <input type="password" id="new-password" placeholder="At least 10 characters" required minlength="10" maxlength="128" autocomplete="new-password" />
         </div>
         <div id="create-user-error" class="error-msg"></div>
         <div class="modal-actions">
@@ -77,11 +77,16 @@
     <div id="ai-workspace-view" class="view-container">
       <div class="app-toolbar">
         <div class="toolbar-actions">
-          <label for="pdf-file-input" class="btn btn-primary file-btn">
+          <label for="pdf-file-input" class="btn btn-primary file-btn pdf-drop-zone" id="direct-pdf-drop-zone" title="Choose a PDF or drag one here">
             <span>Attach PDF</span>
+            <small class="drop-hint">or drop here</small>
             <input type="file" id="pdf-file-input" accept=".pdf" />
           </label>
           <button id="clear-btn" class="btn btn-secondary">Clear Chat</button>
+          <button id="auto-chat-btn" class="btn btn-success">Auto</button>
+          <button id="general-chat-btn" class="btn btn-secondary">General Chat</button>
+          <button id="knowledge-chat-btn" class="btn btn-admin">Knowledge Chat</button>
+          <button id="agent-task-btn" class="btn btn-primary">Agent Task</button>
           <span class="doc-badge" id="current-doc-badge">No document selected</span>
         </div>
         <div class="mode-badge" id="mode-badge">General Chat</div>
@@ -96,40 +101,100 @@
         <div class="metric-pill" id="metric-host">Host: CPU - | RAM -</div>
       </div>
 
-      <main class="main-workspace">
-        <div class="chat-container">
-          <div class="chat-messages" id="chat-messages">
-            <div class="message system">
-              <div class="msg-header">System</div>
-              <div class="msg-content">General Chat is active. Attach a local PDF to start Document Analysis mode.</div>
+      <div class="workspace-body">
+        <main class="main-workspace">
+          <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+              <div class="message system">
+                <div class="msg-header">System</div>
+                <div class="msg-content">General Chat is active. Attach a local PDF to start Document Analysis mode.</div>
+              </div>
+            </div>
+
+            <div id="upload-progress" class="upload-progress hidden">
+              <span id="upload-status-text">Processing PDF (Native + OCR)...</span>
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill"></div>
+              </div>
+            </div>
+
+            <div class="input-container">
+              <textarea
+                id="chat-input"
+                rows="3"
+                placeholder="Type your message here... (Shift+Enter for newline, Enter to send)"
+              ></textarea>
+              <button id="send-btn" class="btn btn-success send-btn">Send</button>
             </div>
           </div>
+        </main>
 
-          <div id="upload-progress" class="upload-progress hidden">
-            <span id="upload-status-text">Processing PDF (Native + OCR)...</span>
-            <div class="progress-bar-container">
-              <div class="progress-bar-fill"></div>
+        <aside id="workspace-sidebar" class="workspace-sidebar hidden" aria-label="Workspace tools">
+          <div class="sidebar-heading">
+            <div>
+              <span class="sidebar-kicker">WORKSPACE TOOLS</span>
+              <h2>Assistant Tools</h2>
             </div>
+            <span class="sidebar-mode" id="sidebar-mode-detail">Knowledge Chat</span>
+          </div>
+          <div class="sidebar-tabs" role="tablist" aria-label="Workspace tools">
+            <button id="knowledge-sidebar-tab" class="sidebar-tab active" role="tab" aria-selected="true">Knowledge Base</button>
+            <button id="session-sidebar-tab" class="sidebar-tab" role="tab" aria-selected="false">Session Info</button>
           </div>
 
-          <div class="input-container">
-            <textarea
-              id="chat-input"
-              rows="3"
-              placeholder="Type your message here... (Shift+Enter for newline, Enter to send)"
-            ></textarea>
-            <button id="send-btn" class="btn btn-success send-btn">Send</button>
-          </div>
-        </div>
-      </main>
+          <section id="knowledge-panel" class="knowledge-panel sidebar-panel" aria-label="Knowledge base">
+            <div class="knowledge-header">
+              <div>
+                <h2>Knowledge Base</h2>
+                <p>Index local PDFs and ask questions across your authorized documents.</p>
+              </div>
+              <button id="refresh-knowledge-btn" class="btn btn-secondary btn-sm">Refresh</button>
+            </div>
+            <div class="knowledge-controls">
+              <label for="knowledge-file-input" class="btn btn-primary file-btn pdf-drop-zone" id="knowledge-pdf-drop-zone" title="Choose a PDF or drag one here">
+                <span>Index PDF</span>
+                <small class="drop-hint">or drop here</small>
+                <input type="file" id="knowledge-file-input" accept=".pdf" />
+              </label>
+              <select id="knowledge-collection-select" class="knowledge-select" aria-label="Knowledge collection">
+                <option value="">All my collections</option>
+              </select>
+              <input id="new-collection-input" class="knowledge-name-input" type="text" maxlength="60" placeholder="New collection name" />
+              <button id="create-collection-btn" class="btn btn-secondary">Create Collection</button>
+            </div>
+            <div id="knowledge-status" class="knowledge-status">Knowledge base is ready.</div>
+            <div class="knowledge-table-wrap">
+              <table class="knowledge-table">
+                <thead><tr><th>Document</th><th>Collection</th><th>Status</th><th>Pages</th><th>Chunks</th><th>Actions</th></tr></thead>
+                <tbody id="knowledge-document-body"><tr><td colspan="6" class="table-loading">No indexed documents loaded.</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="session-sidebar-panel" class="sidebar-panel session-panel hidden" role="tabpanel" aria-label="Session information">
+            <div class="session-panel-header">
+              <span class="sidebar-kicker">CURRENT SESSION</span>
+              <h2>Conversation Details</h2>
+            </div>
+            <div class="session-detail-list">
+              <div class="session-detail"><span>Mode</span><strong id="sidebar-session-mode">Knowledge Chat</strong></div>
+              <div class="session-detail"><span>Document</span><strong id="sidebar-session-document">No document selected</strong></div>
+              <div class="session-detail"><span>Pages</span><strong id="sidebar-session-pages">-</strong></div>
+              <div class="session-detail"><span>Context</span><strong id="sidebar-session-context">-</strong></div>
+              <div class="session-detail"><span>Method</span><strong id="sidebar-session-method">-</strong></div>
+            </div>
+            <div class="session-note">Your chat stays in the main workspace while tools and session details remain available beside it.</div>
+          </section>
+        </aside>
+      </div>
     </div>
 
     <!-- ADMIN DASHBOARD VIEW (Admin Only) -->
     <div id="admin-dashboard-view" class="view-container hidden">
       <div class="admin-header-bar">
         <div class="admin-tab-nav">
-          <button id="admin-tab-users-btn" class="btn btn-tab active">👥 User Management</button>
-          <button id="admin-tab-account-btn" class="btn btn-tab">⚙️ My Account</button>
+          <button id="admin-tab-users-btn" class="btn btn-tab active">User Management</button>
+          <button id="admin-tab-account-btn" class="btn btn-tab">My Account</button>
         </div>
         <button id="open-create-user-modal-btn" class="btn btn-primary">+ Create New User</button>
       </div>
@@ -165,7 +230,7 @@
             </thead>
             <tbody id="user-table-body">
               <tr>
-                <td colspan="6" style="text-align: center; color: #8b949e;">Loading users...</td>
+                <td colspan="6" class="table-loading">Loading users...</td>
               </tr>
             </tbody>
           </table>
@@ -176,7 +241,7 @@
       <div id="admin-account-tab" class="admin-tab-content hidden">
         <div class="account-container">
           <div class="account-card">
-            <h3>👤 Admin Profile</h3>
+            <h3>Admin Profile</h3>
             <p class="account-subtitle">Manage your admin username and password credentials.</p>
 
             <div class="account-info-box">
@@ -196,7 +261,7 @@
               <form id="change-username-form">
                 <div class="form-group">
                   <label for="new-username-input">New Username</label>
-                  <input type="text" id="new-username-input" class="form-input" placeholder="Enter new username" required maxlength="50" />
+                  <input type="text" id="new-username-input" class="form-input" placeholder="Enter new username" required minlength="3" maxlength="50" autocomplete="username" />
                 </div>
                 <div id="username-change-msg" class="form-msg hidden"></div>
                 <button type="submit" class="btn btn-primary" id="save-username-btn">Update Username</button>
@@ -209,15 +274,15 @@
               <form id="change-password-form">
                 <div class="form-group">
                   <label for="current-password-input">Current Password</label>
-                  <input type="password" id="current-password-input" class="form-input" placeholder="Enter current password" required />
+                  <input type="password" id="current-password-input" class="form-input" placeholder="Enter current password" required maxlength="128" autocomplete="current-password" />
                 </div>
                 <div class="form-group">
                   <label for="new-password-input">New Password</label>
-                  <input type="password" id="new-password-input" class="form-input" placeholder="Enter new password (min 4 chars)" required minlength="4" maxlength="128" />
+                  <input type="password" id="new-password-input" class="form-input" placeholder="Enter new password (min 10 chars)" required minlength="10" maxlength="128" autocomplete="new-password" />
                 </div>
                 <div class="form-group">
                   <label for="confirm-password-input">Confirm New Password</label>
-                  <input type="password" id="confirm-password-input" class="form-input" placeholder="Re-enter new password" required minlength="4" maxlength="128" />
+                  <input type="password" id="confirm-password-input" class="form-input" placeholder="Re-enter new password" required minlength="10" maxlength="128" autocomplete="new-password" />
                 </div>
                 <div id="password-change-msg" class="form-msg hidden"></div>
                 <button type="submit" class="btn btn-primary" id="save-password-btn">Change Password</button>
@@ -235,6 +300,6 @@
     </footer>
   </div>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=phase6-routing"></script>
 </body>
 </html>

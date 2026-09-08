@@ -12,6 +12,7 @@ from document.models import DocumentContext, DocumentExtraction, PageBlock
 class AppMode(str, Enum):
     GENERAL_CHAT = "General Chat"
     DOCUMENT_ANALYSIS = "Document Analysis"
+    KNOWLEDGE_CHAT = "Knowledge Chat"
 
 
 @dataclass
@@ -66,9 +67,6 @@ class UserModel:
     is_active: bool = True
     created_at: float = field(default_factory=time.time)
     last_login: Optional[float] = None
-    # For admin accounts: tracks the single allowed active bearer token.
-    # None means no active session. Set on login, cleared on logout/expiry.
-    active_session_token: Optional[str] = None
 
     def to_safe_dict(self) -> Dict[str, Any]:
         return {
@@ -92,6 +90,7 @@ class SessionData:
     mode: AppMode = AppMode.GENERAL_CHAT
     general_messages: List[Dict[str, str]] = field(default_factory=list)
     document_messages: List[Dict[str, str]] = field(default_factory=list)
+    knowledge_messages: List[Dict[str, str]] = field(default_factory=list)
     uploaded_documents: Dict[str, DocumentMetadata] = field(default_factory=dict)
     current_document_id: Optional[str] = None
     current_document_extraction: Optional[DocumentExtraction] = None
@@ -124,3 +123,4 @@ class AuthToken:
     username: str
     role: UserRole = UserRole.USER
     expires_at: float = 0.0
+    session_id: Optional[str] = None

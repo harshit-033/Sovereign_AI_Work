@@ -253,8 +253,8 @@ def build_pdf():
         ],
         [
             Paragraph("<b>3. Engine Layer</b>", table_cell_style),
-            Paragraph("- Ollama (llama3.2:latest)<br/>- PyMuPDF (fitz)<br/>- Tesseract OCR (--psm 6)<br/>- data/users.json & uploads/", table_cell_style),
-            Paragraph("Executes offline LLM text generation, parses PDF streams, rasterizes scanned pages to 220 DPI for OCR, and persists encrypted user databases.", table_cell_style),
+            Paragraph("- Ollama (llama3.2:latest)<br/>- PyMuPDF (fitz)<br/>- Tesseract OCR (--psm 6)<br/>- Local application-data account store", table_cell_style),
+            Paragraph("Executes offline LLM text generation, parses bounded PDF streams, rasterizes scanned pages for OCR, and persists scrypt password hashes outside Git.", table_cell_style),
         ],
     ]
     arch_table = Table(arch_table_data, colWidths=[80, 170, 254])
@@ -291,7 +291,7 @@ def build_pdf():
         [
             Paragraph("<b>core/auth.py</b>", table_cell_code),
             Paragraph("Security & Cryptography", table_cell_style),
-            Paragraph("Salted PBKDF2-HMAC-SHA256 (100k rounds), token validation, and single active admin session enforcement.", table_cell_style),
+            Paragraph("Salted scrypt password hashing, legacy PBKDF2 migration, memory-only token validation, login throttling, and single active admin session enforcement.", table_cell_style),
         ],
         [
             Paragraph("<b>core/session_manager.py</b>", table_cell_code),
@@ -381,17 +381,17 @@ def build_pdf():
     story.append(Paragraph("Flow 1: Authentication & Single Active Admin Session Envariant", h2_style))
     story.append(Paragraph(
         "1. <b>Login Request:</b> Client submits credentials to <code>POST /api/auth/login</code>.<br/>"
-        "2. <b>Verification:</b> <code>AuthService.authenticate()</code> verifies password hash against <code>data/users.json</code>.<br/>"
-        "3. <b>Single Admin Session Check:</b> For <code>role=admin</code>, checks <code>user.active_session_token</code>. If a valid unexpired session exists, returns <code>ADMIN_ALREADY_ACTIVE</code> and responds with <code>HTTP 409 Conflict: 'Admin account is already logged in on another system.'</code><br/>"
-        "4. <b>Token Generation:</b> If clean, generates 32-byte URL-safe Bearer token, stores active token on admin record, and initializes isolated <code>SessionData</code>.<br/>"
+        "2. <b>Verification:</b> <code>AuthService.authenticate()</code> verifies the scrypt password hash in the local application-data account store.<br/>"
+        "3. <b>Single Admin Session Check:</b> For <code>role=admin</code>, checks the in-memory active-token map. A live session returns <code>HTTP 409 Conflict</code>.<br/>"
+        "4. <b>Token Generation:</b> If clean, generates a 32-byte URL-safe token, sets an HttpOnly SameSite cookie, and initializes isolated <code>SessionData</code>. Tokens are never persisted.<br/>"
         "5. <b>Logout Invalidation:</b> On <code>POST /api/auth/logout</code>, token is revoked, admin active session is cleared, and session upload directory is deleted.",
         body_style
     ))
 
     story.append(Paragraph("Flow 2: Admin Profile Self-Management ('My Account')", h2_style))
     story.append(Paragraph(
-        "- <b>Username Change (<code>PATCH /api/admin/me</code>):</b> Guarded by <code>require_admin</code>. Validates format (1-50 chars), checks uniqueness across all accounts, updates user record atomically, and syncs active session labels.<br/>"
-        "- <b>Password Change (<code>POST /api/admin/me/change-password</code>):</b> Guarded by <code>require_admin</code>. Verifies current password against stored hash, validates confirmation match (min 4 chars), generates new random 16-byte salt + PBKDF2 hash, and invalidates old password immediately for future logins.",
+        "- <b>Username Change (<code>PATCH /api/admin/me</code>):</b> Guarded by <code>require_admin</code>. Validates a 3-50 character safe format, checks uniqueness, updates atomically, and syncs active session labels.<br/>"
+        "- <b>Password Change (<code>POST /api/admin/me/change-password</code>):</b> Verifies the current password, enforces a 10-128 character replacement and confirmation, then writes a new random-salt scrypt hash.",
         body_style
     ))
 
@@ -425,9 +425,9 @@ def build_pdf():
     algo_data = [
         [Paragraph("<b>Algorithm / Heuristic</b>", table_header_style), Paragraph("<b>Mathematical / Technical Definition</b>", table_header_style), Paragraph("<b>Purpose & Invariant</b>", table_header_style)],
         [
-            Paragraph("<b>PBKDF2-HMAC-SHA256</b>", table_cell_style),
-            Paragraph("<code>hashlib.pbkdf2_hmac('sha256', pw, salt_16b, 100000)</code><br/>Verification: <code>hmac.compare_digest(k1, k2)</code>", table_cell_code),
-            Paragraph("Secure password storage with 100k derivation iterations. Constant-time digest comparison prevents timing attacks.", table_cell_style),
+            Paragraph("<b>scrypt Password Hashing</b>", table_cell_style),
+            Paragraph("<code>hashlib.scrypt(pw, salt_16b, n=16384, r=8, p=1)</code><br/>Verification: <code>hmac.compare_digest(k1, k2)</code>", table_cell_code),
+            Paragraph("Memory-hard password storage with constant-time digest comparison and transparent legacy PBKDF2 migration.", table_cell_style),
         ],
         [
             Paragraph("<b>Hybrid OCR Router<br/>(is_usable_text)</b>", table_cell_style),
@@ -481,8 +481,8 @@ def build_pdf():
 
     api_data = [
         [Paragraph("<b>Method & Route</b>", table_header_style), Paragraph("<b>Auth Level</b>", table_header_style), Paragraph("<b>Request Body</b>", table_header_style), Paragraph("<b>Response / Status Codes</b>", table_header_style)],
-        [Paragraph("<code>GET /health</code>", table_cell_code), Paragraph("Public", table_cell_style), Paragraph("None", table_cell_style), Paragraph("<code>200 OK</code>: Status, Ollama & OCR health, metrics", table_cell_style)],
-        [Paragraph("<code>GET /api/metrics</code>", table_cell_code), Paragraph("Public", table_cell_style), Paragraph("None", table_cell_style), Paragraph("<code>200 OK</code>: CPU %, RAM MB, queue load", table_cell_style)],
+        [Paragraph("<code>GET /health</code>", table_cell_code), Paragraph("Public", table_cell_style), Paragraph("None", table_cell_style), Paragraph("<code>200 OK</code>: Minimal LLM and OCR readiness", table_cell_style)],
+        [Paragraph("<code>GET /api/metrics</code>", table_cell_code), Paragraph("Authenticated", table_cell_style), Paragraph("None", table_cell_style), Paragraph("<code>200 OK</code>: CPU %, RAM %, queue load", table_cell_style)],
         [Paragraph("<code>POST /api/auth/login</code>", table_cell_code), Paragraph("Public", table_cell_style), Paragraph("<code>{username, password}</code>", table_cell_code), Paragraph("<code>200 OK</code> (token, role), <code>401</code>, <code>409</code> (Admin active)", table_cell_style)],
         [Paragraph("<code>POST /api/auth/logout</code>", table_cell_code), Paragraph("Authenticated", table_cell_style), Paragraph("None", table_cell_style), Paragraph("<code>200 OK</code>: Session revoked & temp files wiped", table_cell_style)],
         [Paragraph("<code>GET /api/auth/me</code>", table_cell_code), Paragraph("Authenticated", table_cell_style), Paragraph("None", table_cell_style), Paragraph("<code>200 OK</code>: User profile (id, username, role)", table_cell_style)],
@@ -514,16 +514,15 @@ def build_pdf():
     story.append(Spacer(1, 8))
 
     # -------------------------------------------------------------
-    # Section 7: Default Credentials & Test Verification Matrix
+    # Section 7: Secure Bootstrap & Test Verification Matrix
     # -------------------------------------------------------------
-    story.append(Paragraph("7. Default Credentials & Automated Verification Matrix", h1_style))
+    story.append(Paragraph("7. Secure Bootstrap & Automated Verification Matrix", h1_style))
 
     cred_data = [
-        [Paragraph("<b>Username</b>", table_header_style), Paragraph("<b>Password</b>", table_header_style), Paragraph("<b>Role</b>", table_header_style), Paragraph("<b>Granted Permissions & Capabilities</b>", table_header_style)],
-        [Paragraph("<code>admin</code>", table_cell_code), Paragraph("<code>admin123</code>", table_cell_code), Paragraph("ADMIN", table_cell_style), Paragraph("Admin Dashboard, User CRUD, My Account profile/pw editing, AI Chat & Doc Analysis (Single Active Session).", table_cell_style)],
-        [Paragraph("<code>user1</code>", table_cell_code), Paragraph("<code>pass123</code>", table_cell_code), Paragraph("USER", table_cell_style), Paragraph("General AI chat, PDF document analysis, isolated session storage (Multi-client concurrent login enabled).", table_cell_style)],
-        [Paragraph("<code>user2</code>", table_cell_code), Paragraph("<code>pass123</code>", table_cell_code), Paragraph("USER", table_cell_style), Paragraph("General AI chat, PDF document analysis, isolated session storage (Multi-client concurrent login enabled).", table_cell_style)],
-        [Paragraph("<code>inspector</code>", table_cell_code), Paragraph("<code>sih2026</code>", table_cell_code), Paragraph("USER", table_cell_style), Paragraph("General AI chat, PDF document analysis, isolated session storage (Multi-client concurrent login enabled).", table_cell_style)],
+        [Paragraph("<b>Bootstrap Source</b>", table_header_style), Paragraph("<b>Secret Handling</b>", table_header_style), Paragraph("<b>Role</b>", table_header_style), Paragraph("<b>Behavior</b>", table_header_style)],
+        [Paragraph("Environment", table_cell_style), Paragraph("<code>SIH_BOOTSTRAP_ADMIN_PASSWORD</code>", table_cell_code), Paragraph("ADMIN", table_cell_style), Paragraph("Creates the first admin only when no active admin exists. Password must be at least 10 characters.", table_cell_style)],
+        [Paragraph("Generated", table_cell_style), Paragraph("One-time terminal output", table_cell_style), Paragraph("ADMIN", table_cell_style), Paragraph("Used only when no password is configured. Must be changed immediately after first login.", table_cell_style)],
+        [Paragraph("Admin Dashboard", table_cell_style), Paragraph("Never displays passwords", table_cell_style), Paragraph("USER", table_cell_style), Paragraph("Administrators create normal-user accounts. No demo accounts or reusable defaults are shipped.", table_cell_style)],
     ]
     cred_table = Table(cred_data, colWidths=[70, 70, 60, 304])
     cred_table.setStyle(TableStyle([

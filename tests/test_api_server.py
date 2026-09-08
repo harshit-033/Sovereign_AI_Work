@@ -8,8 +8,8 @@ from fastapi.testclient import TestClient
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from create_synthetic_pdfs import create_inspection_report, create_scanned_inspection_report
-from server.main import app
+from create_synthetic_pdfs import create_compressor_report, create_inspection_report
+from server_test_support import ADMIN_PASSWORD, app
 
 
 def test_api_server_flow():
@@ -20,8 +20,7 @@ def test_api_server_flow():
     assert res.status_code == 200, f"Health check failed: {res.text}"
     health_data = res.json()
     assert "status" in health_data
-    assert "metrics" in health_data
-    assert "queue" in health_data
+    assert "services" in health_data
 
     # 2. Login with bad credentials
     bad_login = client.post(
@@ -33,7 +32,7 @@ def test_api_server_flow():
     # 3. Login with valid credentials
     login_res = client.post(
         "/api/auth/login",
-        json={"username": "admin", "password": "admin123"},
+        json={"username": "admin", "password": ADMIN_PASSWORD},
     )
     assert login_res.status_code == 200
     auth_data = login_res.json()
@@ -78,6 +77,17 @@ def test_api_server_flow():
     assert docs_list.status_code == 200
     assert len(docs_list.json()["documents"]) == 1
 
+    # Loading a second document must not make the first document endpoint use
+    # the second document's context.
+    second_pdf_path = create_compressor_report()
+    with open(second_pdf_path, "rb") as file_handle:
+        second_upload = client.post(
+            "/api/documents",
+            headers=headers,
+            files={"file": ("compressor.pdf", file_handle, "application/pdf")},
+        )
+    assert second_upload.status_code == 200
+
     # 8. Document QA Non-Streaming (mocked)
     with patch("core.ai_service.ollama.chat") as mock_chat:
         mock_chat.return_value = {
@@ -90,6 +100,9 @@ def test_api_server_flow():
         )
         assert doc_chat_res.status_code == 200
         assert "PUMP-A17" in doc_chat_res.json()["content"]
+        prompt = mock_chat.call_args.kwargs["messages"][-1]["content"]
+        assert "PUMP-A17" in prompt
+        assert "COMP-B44" not in prompt
 
     # 9. Clear Chat
     clear_res = client.post("/api/chat/clear", headers=headers)

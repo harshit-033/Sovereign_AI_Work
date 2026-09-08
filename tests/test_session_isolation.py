@@ -8,20 +8,20 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from create_synthetic_pdfs import create_inspection_report, create_scanned_inspection_report
-from server.main import app
+from server_test_support import USER1_PASSWORD, USER2_PASSWORD, app
 
 
 def test_session_isolation():
     client = TestClient(app)
 
     # 1. Login Client 1 (User 1)
-    res1 = client.post("/api/auth/login", json={"username": "user1", "password": "pass123"})
+    res1 = client.post("/api/auth/login", json={"username": "user1", "password": USER1_PASSWORD})
     assert res1.status_code == 200
     token1 = res1.json()["token"]
     headers1 = {"Authorization": f"Bearer {token1}"}
 
     # 2. Login Client 2 (User 2)
-    res2 = client.post("/api/auth/login", json={"username": "user2", "password": "pass123"})
+    res2 = client.post("/api/auth/login", json={"username": "user2", "password": USER2_PASSWORD})
     assert res2.status_code == 200
     token2 = res2.json()["token"]
     headers2 = {"Authorization": f"Bearer {token2}"}

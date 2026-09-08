@@ -10,6 +10,7 @@ from .ocr import OCRPageError, OCRUnavailableError, ocr_page
 
 MIN_USABLE_TEXT_CHARS = 30
 MIN_USABLE_ALNUM_CHARS = 12
+MAX_PAGE_TEXT_CHARS = 100_000
 
 
 def normalize_native_text(text: str) -> str:
@@ -34,7 +35,7 @@ def extract_page_text(
     page_count: int,
     progress_callback=None,
 ) -> tuple[PageBlock | None, bool, bool]:
-    native_text = normalize_native_text(page.get_text("text"))
+    native_text = normalize_native_text(page.get_text("text"))[:MAX_PAGE_TEXT_CHARS]
     if is_usable_text(native_text):
         return PageBlock(page_number, native_text, "native", source), False, False
 
@@ -49,6 +50,6 @@ def extract_page_text(
         return None, True, True
 
     if is_usable_text(text):
-        return PageBlock(page_number, text, "ocr", source), True, False
+        return PageBlock(page_number, text[:MAX_PAGE_TEXT_CHARS], "ocr", source), True, False
 
     return None, True, True

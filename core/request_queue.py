@@ -26,14 +26,23 @@ class RequestTask:
 
 
 class RequestQueue:
-    def __init__(self, max_concurrent_inference: int = 1):
+    def __init__(self, max_concurrent_inference: int = 1, max_retained_tasks: int = 200):
         self.semaphore = asyncio.Semaphore(max_concurrent_inference)
+        self.max_retained_tasks = max_retained_tasks
         self.active_count = 0
         self.queued_count = 0
         self._lock = asyncio.Lock()
         self._tasks: Dict[str, RequestTask] = {}
 
     def create_task(self, session_id: str, action_type: str) -> RequestTask:
+        if len(self._tasks) >= self.max_retained_tasks:
+            completed_ids = [
+                task_id
+                for task_id, task in self._tasks.items()
+                if task.status in (RequestStatus.COMPLETED, RequestStatus.FAILED)
+            ]
+            for task_id in completed_ids[: max(1, len(completed_ids) // 2)]:
+                self._tasks.pop(task_id, None)
         task_id = str(uuid.uuid4())
         task = RequestTask(
             task_id=task_id,

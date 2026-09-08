@@ -15,6 +15,7 @@ TESSERACT_CANDIDATES = [
 ]
 OCR_DPI = 220
 TESSERACT_CONFIG = "--psm 6"
+MAX_RENDER_PIXELS = 20_000_000
 
 
 class OCRUnavailableError(RuntimeError):
@@ -64,7 +65,15 @@ def ocr_page(page: pymupdf.Page) -> str:
     configure_tesseract()
 
     try:
-        pixmap = page.get_pixmap(dpi=OCR_DPI, alpha=False)
+        width_inches = page.rect.width / 72
+        height_inches = page.rect.height / 72
+        requested_pixels = width_inches * height_inches * OCR_DPI * OCR_DPI
+        dpi = OCR_DPI
+        if requested_pixels > MAX_RENDER_PIXELS:
+            dpi = int((MAX_RENDER_PIXELS / (width_inches * height_inches)) ** 0.5)
+        if dpi < 100:
+            raise OCRPageError("Page dimensions are too large for safe OCR processing.")
+        pixmap = page.get_pixmap(dpi=dpi, alpha=False)
         image = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples)
         text = pytesseract.image_to_string(image, lang="eng", config=TESSERACT_CONFIG)
     except OCRUnavailableError:

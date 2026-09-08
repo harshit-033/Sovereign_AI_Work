@@ -19,7 +19,8 @@ class AIService:
     def __init__(self, model_name: str = DEFAULT_MODEL_NAME):
         self.model_name = model_name
 
-    def check_health(self) -> Dict[str, Any]:
+    def check_health(self, model_name: Optional[str] = None) -> Dict[str, Any]:
+        configured_model = model_name or self.model_name
         try:
             models_info = ollama.list()
             # ollama.list() returns a dict or ListResponse with 'models'
@@ -38,12 +39,12 @@ class AIService:
             
             # Check if our model name matches any installed model
             is_available = any(
-                self.model_name in name or name.startswith(self.model_name.split(":")[0])
+                configured_model in name or name.startswith(configured_model.split(":")[0])
                 for name in model_names
             )
             return {
                 "connected": True,
-                "model_configured": self.model_name,
+                "model_configured": configured_model,
                 "model_available": is_available,
                 "available_models": model_names,
             }
@@ -51,16 +52,17 @@ class AIService:
             logger.warning("Ollama health check failed: %s", exc)
             return {
                 "connected": False,
-                "model_configured": self.model_name,
+                "model_configured": configured_model,
                 "model_available": False,
                 "error": str(exc),
             }
 
     def generate_chat_stream(
-        self, messages: List[Dict[str, str]]
+        self, messages: List[Dict[str, str]], model_name: Optional[str] = None
     ) -> Generator[str, None, float]:
         started_at = time.perf_counter()
-        stream = ollama.chat(model=self.model_name, messages=messages, stream=True)
+        configured_model = model_name or self.model_name
+        stream = ollama.chat(model=configured_model, messages=messages, stream=True)
         for chunk in stream:
             piece = ""
             if isinstance(chunk, dict):
@@ -74,9 +76,10 @@ class AIService:
         elapsed = time.perf_counter() - started_at
         return elapsed
 
-    def generate_chat(self, messages: List[Dict[str, str]]) -> Dict[str, Any]:
+    def generate_chat(self, messages: List[Dict[str, str]], model_name: Optional[str] = None) -> Dict[str, Any]:
         started_at = time.perf_counter()
-        response = ollama.chat(model=self.model_name, messages=messages, stream=False)
+        configured_model = model_name or self.model_name
+        response = ollama.chat(model=configured_model, messages=messages, stream=False)
         elapsed = time.perf_counter() - started_at
         
         content = ""
@@ -90,5 +93,5 @@ class AIService:
         return {
             "content": content,
             "latency_seconds": elapsed,
-            "model": self.model_name,
+            "model": configured_model,
         }
