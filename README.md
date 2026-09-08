@@ -1,6 +1,6 @@
-# SIH Local AI Workbench
+# AI Workbench
 
-SIH Local AI Workbench is a Windows application for chatting with a local large language model, analyzing PDF files, extracting text from scanned documents with OCR, and searching a private local knowledge base.
+Local AI Workbench is a Windows application for chatting with a local large language model, analyzing PDF files, extracting text from scanned documents with OCR, and searching a private local knowledge base.
 
 It includes:
 
