@@ -30,14 +30,14 @@ class AgentConfig:
 
     @classmethod
     def from_env(cls) -> "AgentConfig":
-        raw = os.getenv("SIH_AGENT_ENABLED", "1").strip().lower()
+        raw = os.getenv("LOCAL_AI_AGENT_ENABLED", "1").strip().lower()
         if raw not in {"0", "1", "true", "false", "yes", "no", "on", "off"}:
-            raise AgentConfigurationError("SIH_AGENT_ENABLED must be a boolean flag.")
+            raise AgentConfigurationError("LOCAL_AI_AGENT_ENABLED must be a boolean flag.")
         return cls(
             enabled=raw in {"1", "true", "yes", "on"},
-            max_steps=_bounded_int("SIH_AGENT_MAX_STEPS", 8, 1, 32),
-            max_tool_calls=_bounded_int("SIH_AGENT_MAX_TOOL_CALLS", 12, 1, 64),
-            max_execution_seconds=_bounded_int("SIH_AGENT_MAX_EXECUTION_SECONDS", 120, 1, 600),
-            max_output_chars=_bounded_int("SIH_AGENT_MAX_OUTPUT_CHARS", 32_000, 1_000, 128_000),
-            max_file_bytes=_bounded_int("SIH_AGENT_MAX_FILE_BYTES", 2_000_000, 1_024, 10_000_000),
+            max_steps=_bounded_int("LOCAL_AI_AGENT_MAX_STEPS", 8, 1, 32),
+            max_tool_calls=_bounded_int("LOCAL_AI_AGENT_MAX_TOOL_CALLS", 12, 1, 64),
+            max_execution_seconds=_bounded_int("LOCAL_AI_AGENT_MAX_EXECUTION_SECONDS", 120, 1, 600),
+            max_output_chars=_bounded_int("LOCAL_AI_AGENT_MAX_OUTPUT_CHARS", 32_000, 1_000, 128_000),
+            max_file_bytes=_bounded_int("LOCAL_AI_AGENT_MAX_FILE_BYTES", 2_000_000, 1_024, 10_000_000),
         )

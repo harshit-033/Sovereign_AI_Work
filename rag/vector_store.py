@@ -15,7 +15,7 @@ class VectorStoreError(RuntimeError):
 
 
 class PersistentVectorStore:
-    COLLECTION_NAME = "sih_rag_chunks"
+    COLLECTION_NAME = "local_ai_rag_chunks"
 
     def __init__(self, path: str | Path):
         self.path = Path(path).resolve()

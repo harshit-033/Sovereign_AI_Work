@@ -44,25 +44,25 @@ class RagConfig:
     @classmethod
     def from_env(cls) -> "RagConfig":
         project_root = Path(__file__).resolve().parents[1]
-        configured_path = os.getenv("SIH_RAG_STORAGE_PATH")
+        configured_path = os.getenv("LOCAL_AI_RAG_STORAGE_PATH")
         storage_path = (
             Path(configured_path).expanduser().resolve()
             if configured_path
             else (project_root / "data" / "rag").resolve()
         )
-        embedding_model = os.getenv("SIH_EMBED_MODEL", cls.embedding_model).strip()
+        embedding_model = os.getenv("LOCAL_AI_EMBED_MODEL", cls.embedding_model).strip()
         if not embedding_model or len(embedding_model) > 120:
-            raise RagConfigurationError("SIH_EMBED_MODEL must be 1-120 characters.")
-        chunk_size = _positive_int("SIH_RAG_CHUNK_SIZE", cls.chunk_size, 256, 8_000)
-        chunk_overlap = _positive_int("SIH_RAG_CHUNK_OVERLAP", cls.chunk_overlap, 0, 2_000)
+            raise RagConfigurationError("LOCAL_AI_EMBED_MODEL must be 1-120 characters.")
+        chunk_size = _positive_int("LOCAL_AI_RAG_CHUNK_SIZE", cls.chunk_size, 256, 8_000)
+        chunk_overlap = _positive_int("LOCAL_AI_RAG_CHUNK_OVERLAP", cls.chunk_overlap, 0, 2_000)
         if chunk_overlap >= chunk_size:
-            raise RagConfigurationError("SIH_RAG_CHUNK_OVERLAP must be smaller than chunk size.")
+            raise RagConfigurationError("LOCAL_AI_RAG_CHUNK_OVERLAP must be smaller than chunk size.")
         return cls(
-            enabled=_enabled("SIH_RAG_ENABLED"),
+            enabled=_enabled("LOCAL_AI_RAG_ENABLED"),
             embedding_model=embedding_model,
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
-            top_k=_positive_int("SIH_RAG_TOP_K", cls.top_k, 1, 20),
-            context_limit=_positive_int("SIH_RAG_CONTEXT_LIMIT", cls.context_limit, 1_000, 48_000),
+            top_k=_positive_int("LOCAL_AI_RAG_TOP_K", cls.top_k, 1, 20),
+            context_limit=_positive_int("LOCAL_AI_RAG_CONTEXT_LIMIT", cls.context_limit, 1_000, 48_000),
             storage_path=storage_path,
         )

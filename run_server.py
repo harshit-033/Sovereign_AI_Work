@@ -21,10 +21,10 @@ def _usable_lan_ipv4(value: str) -> bool:
 
 
 def get_lan_ip() -> str:
-    configured = os.getenv("SIH_LAN_IP", "").strip()
+    configured = os.getenv("LOCAL_AI_LAN_IP", "").strip()
     if configured:
         if not _usable_lan_ipv4(configured):
-            raise SystemExit("SIH_LAN_IP must be a private, non-loopback IPv4 address.")
+            raise SystemExit("LOCAL_AI_LAN_IP must be a private, non-loopback IPv4 address.")
         return configured
 
     # UDP connect selects the host's default route without sending application data.
@@ -59,38 +59,38 @@ def get_lan_ip() -> str:
 
 def get_port() -> int:
     try:
-        port = int(os.getenv("SIH_SERVER_PORT", "8000"))
+        port = int(os.getenv("LOCAL_AI_SERVER_PORT", "8000"))
     except ValueError as exc:
-        raise SystemExit("SIH_SERVER_PORT must be a number.") from exc
+        raise SystemExit("LOCAL_AI_SERVER_PORT must be a number.") from exc
     if not 1 <= port <= 65535:
-        raise SystemExit("SIH_SERVER_PORT must be between 1 and 65535.")
+        raise SystemExit("LOCAL_AI_SERVER_PORT must be between 1 and 65535.")
     return port
 
 def main():
     lan_ip = get_lan_ip()
     port = get_port()
-    host = os.getenv("SIH_SERVER_HOST", "0.0.0.0")
-    cert_path = os.getenv("SIH_TLS_CERT_FILE")
-    key_path = os.getenv("SIH_TLS_KEY_FILE")
+    host = os.getenv("LOCAL_AI_SERVER_HOST", "0.0.0.0")
+    cert_path = os.getenv("LOCAL_AI_TLS_CERT_FILE")
+    key_path = os.getenv("LOCAL_AI_TLS_KEY_FILE")
     if bool(cert_path) != bool(key_path):
-        raise SystemExit("Set both SIH_TLS_CERT_FILE and SIH_TLS_KEY_FILE, or neither.")
+        raise SystemExit("Set both LOCAL_AI_TLS_CERT_FILE and LOCAL_AI_TLS_KEY_FILE, or neither.")
     if cert_path and (not Path(cert_path).is_file() or not Path(key_path).is_file()):
         raise SystemExit("The configured TLS certificate or key file does not exist.")
     scheme = "https" if cert_path else "http"
     
     print("=" * 70)
-    print("  SIH LOCAL AI WORKBENCH - MULTI-CLIENT SERVER")
+    print("  LOCAL AI WORKBENCH - MULTI-CLIENT SERVER")
     print("=" * 70)
     print(f"[*] Local Host URL   : {scheme}://localhost:{port}")
     print(f"[*] LAN Network URL  : {scheme}://{lan_ip}:{port}")
     print("-" * 70)
     if not cert_path and lan_ip != "127.0.0.1":
-        print("[!] LAN traffic is HTTP. Configure SIH_TLS_CERT_FILE and SIH_TLS_KEY_FILE")
+        print("[!] LAN traffic is HTTP. Configure LOCAL_AI_TLS_CERT_FILE and LOCAL_AI_TLS_KEY_FILE")
         print("    before using the app on an untrusted network.")
     if lan_ip == "127.0.0.1":
         print("[!] No private LAN IPv4 address was detected.")
         print("    127.0.0.1 works only on this computer. Run `ipconfig` and set:")
-        print("    $env:SIH_LAN_IP = '192.168.x.x' before starting the server.")
+        print("    $env:LOCAL_AI_LAN_IP = '192.168.x.x' before starting the server.")
     print("=" * 70)
     
     uvicorn.run(

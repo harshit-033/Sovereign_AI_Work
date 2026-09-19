@@ -111,8 +111,8 @@ class AuthService:
         if any(u.role == UserRole.ADMIN and u.is_active for u in self.user_store.list_users()):
             return
 
-        username = os.getenv("SIH_BOOTSTRAP_ADMIN_USERNAME", "admin").strip() or "admin"
-        configured_password = os.getenv("SIH_BOOTSTRAP_ADMIN_PASSWORD")
+        username = os.getenv("LOCAL_AI_BOOTSTRAP_ADMIN_USERNAME", "admin").strip() or "admin"
+        configured_password = os.getenv("LOCAL_AI_BOOTSTRAP_ADMIN_PASSWORD")
         password = configured_password or secrets.token_urlsafe(18)
         self.user_store.bootstrap_admin(username, hash_password(password))
         if not configured_password:

@@ -45,11 +45,11 @@ Capability selection does not contain model names. Model selection is resolved b
 
 | Capability | Environment variable | Default |
 | :--- | :--- | :--- |
-| `GENERAL_CHAT` | `SIH_GENERAL_MODEL` | `llama3.2:latest` |
-| `DOCUMENT_ANALYSIS` | `SIH_DOCUMENT_MODEL` | `llama3.2:latest` |
-| `KNOWLEDGE_RAG` | `SIH_RAG_MODEL` | `llama3.2:latest` |
+| `GENERAL_CHAT` | `LOCAL_AI_GENERAL_MODEL` | `llama3.2:latest` |
+| `DOCUMENT_ANALYSIS` | `LOCAL_AI_DOCUMENT_MODEL` | `llama3.2:latest` |
+| `KNOWLEDGE_RAG` | `LOCAL_AI_RAG_MODEL` | `llama3.2:latest` |
 
-Unset capability variables fall back to `SIH_MODEL_NAME`, then `llama3.2:latest`. Different local models can be configured without changing classifier code. The verified baseline continues to use the existing `llama3.2:latest`; no specialized model claim is made.
+Unset capability variables fall back to `LOCAL_AI_MODEL_NAME`, then `llama3.2:latest`. Different local models can be configured without changing classifier code. The verified baseline continues to use the existing `llama3.2:latest`; no specialized model claim is made.
 
 ## Modes And Precedence
 
@@ -82,7 +82,7 @@ Examples: `Hello` and `Explain recursion` route General; `What is the equipment 
 
 ## Failure Handling And Health
 
-`SIH_ROUTING_ENABLED=0` returns an explicit router-disabled error. `SIH_AUTO_ROUTING_ENABLED=0` requires explicit mode. Invalid modes, unavailable required context, and unavailable RAG return explicit HTTP errors. Local model failures identify the capability/model in SSE or HTTP error text and never fall back to cloud services.
+`LOCAL_AI_ROUTING_ENABLED=0` returns an explicit router-disabled error. `LOCAL_AI_AUTO_ROUTING_ENABLED=0` requires explicit mode. Invalid modes, unavailable required context, and unavailable RAG return explicit HTTP errors. Local model failures identify the capability/model in SSE or HTTP error text and never fall back to cloud services.
 
 `GET /health` now reports per-capability model/handler status. General Chat and Document Analysis require their configured chat model; Document Analysis additionally reports OCR availability; Knowledge RAG reports both its chat model and the existing embedding/RAG readiness.
 

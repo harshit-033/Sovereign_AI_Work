@@ -1,4 +1,4 @@
-# AI Workbench
+# Local AI Workbench
 
 Local AI Workbench is a Windows application for chatting with a local large language model, analyzing PDF files, extracting text from scanned documents with OCR, and searching a private local knowledge base.
 
@@ -73,8 +73,8 @@ ollama list
 Clone the repository and create a virtual environment:
 
 ~~~
-git clone https://github.com/harshit-033/SIH_PROJECT_1.git
-cd SIH_PROJECT_1
+git clone https://github.com/your-account/local-ai-workbench.git
+cd local-ai-workbench
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
@@ -110,8 +110,8 @@ http://localhost:8000
 On the first run, the terminal prints a one-time generated administrator password. There are no hardcoded default passwords or demo accounts. You can set the first administrator credentials before starting the server:
 
 ~~~
-$env:SIH_BOOTSTRAP_ADMIN_USERNAME = "admin"
-$env:SIH_BOOTSTRAP_ADMIN_PASSWORD = "Use-A-Long-Unique-Password"
+$env:LOCAL_AI_BOOTSTRAP_ADMIN_USERNAME = "admin"
+$env:LOCAL_AI_BOOTSTRAP_ADMIN_PASSWORD = "Use-A-Long-Unique-Password"
 .\.venv\Scripts\python.exe run_server.py
 ~~~
 
@@ -192,14 +192,14 @@ Do not use 127.0.0.1 from another PC. It always refers to the computer making th
 If the launcher cannot detect the correct address, set it explicitly before starting:
 
 ~~~
-$env:SIH_LAN_IP = "192.168.1.23"
+$env:LOCAL_AI_LAN_IP = "192.168.1.23"
 .\.venv\Scripts\python.exe run_server.py
 ~~~
 
 If Windows Firewall blocks the connection, allow the server port on the host. Run this from an Administrator PowerShell only on a trusted private network:
 
 ~~~
-New-NetFirewallRule -DisplayName "SIH Local AI Workbench 8000" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private
+New-NetFirewallRule -DisplayName "Local AI Workbench 8000" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private
 ~~~
 
 Plain HTTP should only be used on localhost or a trusted private LAN. For an untrusted network, configure HTTPS using the TLS variables below.
@@ -210,26 +210,26 @@ Set environment variables in PowerShell before starting the server. The most use
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
-| SIH_MODEL_NAME | Default Ollama chat model | llama3.2:latest |
-| SIH_EMBED_MODEL | Ollama embedding model | nomic-embed-text:latest |
-| SIH_SERVER_HOST | Server bind address | 0.0.0.0 |
-| SIH_SERVER_PORT | Server port | 8000 |
-| SIH_LAN_IP | Override detected private LAN IP | Auto-detected |
-| SIH_USER_STORE_PATH | Account JSON file location | %LOCALAPPDATA%\SIHLocalAI\users.json |
-| SIH_UPLOAD_DIR | Temporary uploaded-file directory | Project uploads directory |
-| SIH_RAG_STORAGE_PATH | ChromaDB storage directory | Project data/rag directory |
-| SIH_RAG_ENABLED | Enable Knowledge Chat | 1 |
-| SIH_AGENT_ENABLED | Enable Agent Task | 1 |
-| SIH_ENABLE_API_DOCS | Enable /docs and OpenAPI | Disabled |
-| SIH_TLS_CERT_FILE | HTTPS certificate path | Not set |
-| SIH_TLS_KEY_FILE | HTTPS private-key path | Not set |
+| LOCAL_AI_MODEL_NAME | Default Ollama chat model | llama3.2:latest |
+| LOCAL_AI_EMBED_MODEL | Ollama embedding model | nomic-embed-text:latest |
+| LOCAL_AI_SERVER_HOST | Server bind address | 0.0.0.0 |
+| LOCAL_AI_SERVER_PORT | Server port | 8000 |
+| LOCAL_AI_LAN_IP | Override detected private LAN IP | Auto-detected |
+| LOCAL_AI_USER_STORE_PATH | Account JSON file location | %LOCALAPPDATA%\LocalAIWorkbench\users.json |
+| LOCAL_AI_UPLOAD_DIR | Temporary uploaded-file directory | Project uploads directory |
+| LOCAL_AI_RAG_STORAGE_PATH | ChromaDB storage directory | Project data/rag directory |
+| LOCAL_AI_RAG_ENABLED | Enable Knowledge Chat | 1 |
+| LOCAL_AI_AGENT_ENABLED | Enable Agent Task | 1 |
+| LOCAL_AI_ENABLE_API_DOCS | Enable /docs and OpenAPI | Disabled |
+| LOCAL_AI_TLS_CERT_FILE | HTTPS certificate path | Not set |
+| LOCAL_AI_TLS_KEY_FILE | HTTPS private-key path | Not set |
 
 Example HTTPS configuration:
 
 ~~~
-$env:SIH_TLS_CERT_FILE = "C:\certs\server.crt"
-$env:SIH_TLS_KEY_FILE = "C:\certs\server.key"
-$env:SIH_COOKIE_SECURE = "1"
+$env:LOCAL_AI_TLS_CERT_FILE = "C:\certs\server.crt"
+$env:LOCAL_AI_TLS_KEY_FILE = "C:\certs\server.key"
+$env:LOCAL_AI_COOKIE_SECURE = "1"
 .\.venv\Scripts\python.exe run_server.py
 ~~~
 
@@ -237,7 +237,7 @@ For the complete configuration list and server details, see SERVER_GUIDE.md.
 
 ## Data locations
 
-- Accounts: %LOCALAPPDATA%\SIHLocalAI\users.json.
+- Accounts: %LOCALAPPDATA%\LocalAIWorkbench\users.json.
 - Temporary direct-analysis uploads: uploads by default.
 - Persistent Knowledge Chat files, vectors, and metadata: data/rag by default.
 - Agent outputs: data/agent_outputs/<session_id> by default.
@@ -311,7 +311,7 @@ Make sure Ollama is running and verify the installed models:
 ollama list
 ~~~
 
-If a custom model is installed, set SIH_MODEL_NAME before starting the server.
+If a custom model is installed, set LOCAL_AI_MODEL_NAME before starting the server.
 
 ### OCR is unavailable
 
@@ -319,7 +319,7 @@ Install Tesseract OCR for Windows and confirm that tesseract.exe is available at
 
 ### Knowledge Chat cannot index a PDF
 
-Check that nomic-embed-text:latest is installed and that SIH_RAG_ENABLED is not set to 0. The server health page at /health reports whether the LLM, OCR, and RAG services are ready.
+Check that nomic-embed-text:latest is installed and that LOCAL_AI_RAG_ENABLED is not set to 0. The server health page at /health reports whether the LLM, OCR, and RAG services are ready.
 
 ### Another PC cannot open the LAN URL
 

@@ -7,7 +7,7 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-import fitz
+import pymupdf
 
 
 class AgentOutputManager:
@@ -63,7 +63,7 @@ class AgentOutputManager:
             raise ValueError("PDF content is required.")
         safe = self._safe_filename(filename, ".pdf")
         path = self._session_dir(session_id) / safe
-        pdf = fitz.open()
+        pdf = pymupdf.open()
         try:
             lines: list[str] = []
             raw_lines = content.replace("\r\n", "\n").replace("\r", "\n").split("\n")

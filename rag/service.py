@@ -55,7 +55,7 @@ class RagService:
 
     def _require_enabled(self) -> None:
         if not self.config.enabled:
-            raise RagDisabledError("Knowledge Chat is disabled. Set SIH_RAG_ENABLED=1 to enable it.")
+            raise RagDisabledError("Knowledge Chat is disabled. Set LOCAL_AI_RAG_ENABLED=1 to enable it.")
 
     def create_collection(self, owner_user_id: str, name: str) -> CollectionRecord:
         self._require_enabled()

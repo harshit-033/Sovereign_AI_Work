@@ -17,7 +17,7 @@ from reportlab.platypus import (
 from reportlab.pdfgen import canvas
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-OUTPUT_PDF = PROJECT_ROOT / "SIH_Local_AI_Workbench_Comprehensive_Documentation.pdf"
+OUTPUT_PDF = PROJECT_ROOT / "Local_AI_Workbench_Comprehensive_Documentation.pdf"
 
 
 class NumberedCanvas(canvas.Canvas):
@@ -44,7 +44,7 @@ class NumberedCanvas(canvas.Canvas):
         
         # Header (pages > 1)
         if self._pageNumber > 1:
-            self.drawString(54, letter[1] - 36, "SIH Local AI Workbench - Comprehensive Architecture & Technical Specification")
+            self.drawString(54, letter[1] - 36, "Local AI Workbench - Comprehensive Architecture & Technical Specification")
             self.setStrokeColor(colors.HexColor("#e5e7eb"))
             self.setLineWidth(0.5)
             self.line(54, letter[1] - 42, letter[0] - 54, letter[1] - 42)
@@ -52,7 +52,7 @@ class NumberedCanvas(canvas.Canvas):
         # Footer (all pages)
         page_str = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(letter[0] - 54, 30, page_str)
-        self.drawString(54, 30, "CONFIDENTIAL & PROPRIETARY - SIH 2026 LOCAL AI WORKBENCH")
+        self.drawString(54, 30, "CONFIDENTIAL & PROPRIETARY - 2026 LOCAL AI WORKBENCH")
         self.setStrokeColor(colors.HexColor("#e5e7eb"))
         self.setLineWidth(0.5)
         self.line(54, 42, letter[0] - 54, 42)
@@ -179,7 +179,7 @@ def build_pdf():
     # -------------------------------------------------------------
     # Cover / Header Section
     # -------------------------------------------------------------
-    story.append(Paragraph("SIH Local AI Workbench", title_style))
+    story.append(Paragraph("Local AI Workbench", title_style))
     story.append(Paragraph("Comprehensive Technical Documentation, System Architecture, Algorithms & API Specification", subtitle_style))
     story.append(HRFlowable(width="100%", thickness=1.5, color=primary_color, spaceAfter=8))
 
@@ -214,11 +214,11 @@ def build_pdf():
     # -------------------------------------------------------------
     story.append(Paragraph("1. Executive Summary & Core Purpose (What, Where & How)", h1_style))
     story.append(Paragraph(
-        "<b>What is the system?</b> The SIH Local AI Workbench is a high-performance, air-gapped, privacy-first local AI platform designed for multi-client document intelligence, optical character recognition (OCR), and conversational AI. It allows connected client devices on a Local Area Network (LAN) or local machine to perform interactive LLM chat and inspect complex native and scanned PDF reports without external internet access or cloud dependencies.",
+        "<b>What is the system?</b> The Local AI Workbench is a high-performance, air-gapped, privacy-first local AI platform designed for multi-client document intelligence, optical character recognition (OCR), and conversational AI. It allows connected client devices on a Local Area Network (LAN) or local machine to perform interactive LLM chat and inspect complex native and scanned PDF reports without external internet access or cloud dependencies.",
         body_style
     ))
     story.append(Paragraph(
-        "<b>What problem does it solve?</b> Standard enterprise AI tools expose sensitive inspection documents to cloud APIs, incur recurring token fees, and require active internet connectivity. The SIH Local AI Workbench hosts the entire pipeline - from PDF parsing and OCR rasterization to LLM inference and role-based user management - completely on the local host machine.",
+        "<b>What problem does it solve?</b> Standard enterprise AI tools expose sensitive inspection documents to cloud APIs, incur recurring token fees, and require active internet connectivity. The Local AI Workbench hosts the entire pipeline - from PDF parsing and OCR rasterization to LLM inference and role-based user management - completely on the local host machine.",
         body_style
     ))
     story.append(Paragraph(
@@ -520,7 +520,7 @@ def build_pdf():
 
     cred_data = [
         [Paragraph("<b>Bootstrap Source</b>", table_header_style), Paragraph("<b>Secret Handling</b>", table_header_style), Paragraph("<b>Role</b>", table_header_style), Paragraph("<b>Behavior</b>", table_header_style)],
-        [Paragraph("Environment", table_cell_style), Paragraph("<code>SIH_BOOTSTRAP_ADMIN_PASSWORD</code>", table_cell_code), Paragraph("ADMIN", table_cell_style), Paragraph("Creates the first admin only when no active admin exists. Password must be at least 10 characters.", table_cell_style)],
+        [Paragraph("Environment", table_cell_style), Paragraph("<code>LOCAL_AI_BOOTSTRAP_ADMIN_PASSWORD</code>", table_cell_code), Paragraph("ADMIN", table_cell_style), Paragraph("Creates the first admin only when no active admin exists. Password must be at least 10 characters.", table_cell_style)],
         [Paragraph("Generated", table_cell_style), Paragraph("One-time terminal output", table_cell_style), Paragraph("ADMIN", table_cell_style), Paragraph("Used only when no password is configured. Must be changed immediately after first login.", table_cell_style)],
         [Paragraph("Admin Dashboard", table_cell_style), Paragraph("Never displays passwords", table_cell_style), Paragraph("USER", table_cell_style), Paragraph("Administrators create normal-user accounts. No demo accounts or reusable defaults are shipped.", table_cell_style)],
     ]

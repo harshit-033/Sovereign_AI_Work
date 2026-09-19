@@ -10,7 +10,7 @@ The Phase 7 Agent Task implementation is present, integrated, locally tested, an
 
 ## Implemented Scope
 
-- Added the separate `AGENT_TASK` capability and `SIH_AGENT_MODEL` / `SIH_AGENT_ENABLED` routing configuration.
+- Added the separate `AGENT_TASK` capability and `LOCAL_AI_AGENT_MODEL` / `LOCAL_AI_AGENT_ENABLED` routing configuration.
 - Added the modular `agent/` package: models, deterministic planner, explicit registry, policy engine, executor, verifier, approval manager, audit logger, output manager, and service wiring.
 - Registered only seven local tools: `search_knowledge`, `list_documents`, `get_document_metadata`, `retrieve_document_information`, `calculate`, `generate_txt`, and `generate_pdf`.
 - Kept shell, PowerShell, command prompt, arbitrary Python, `eval`, `exec`, subprocess, network, browser, installer, and unrestricted filesystem operations outside the registry and handler map.
@@ -19,7 +19,7 @@ The Phase 7 Agent Task implementation is present, integrated, locally tested, an
 - Added verified TXT/PDF output generation. TXT is read back as UTF-8; PDF output is checked for a `%PDF-` signature.
 - Added Agent Task API and SSE lifecycle events: `agent_started`, `plan_created`, `tool_started`, `tool_completed`, `verification_completed`, `approval_required`, and `final_result`.
 - Added the browser `Agent Task` button and live progress/result/download handling while retaining existing General, Document, Knowledge, and Auto flows.
-- Added `SIH_AGENT_OUTPUT_DIR` so tests and deployments can isolate generated artifacts.
+- Added `LOCAL_AI_AGENT_OUTPUT_DIR` so tests and deployments can isolate generated artifacts.
 
 ## Report Generation Quality Improvements
 

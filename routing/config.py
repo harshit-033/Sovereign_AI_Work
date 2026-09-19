@@ -39,13 +39,13 @@ class RoutingConfig:
 
     @classmethod
     def from_env(cls) -> "RoutingConfig":
-        fallback = os.getenv("SIH_MODEL_NAME", cls.general_model).strip() or cls.general_model
+        fallback = os.getenv("LOCAL_AI_MODEL_NAME", cls.general_model).strip() or cls.general_model
         return cls(
-            enabled=_flag("SIH_ROUTING_ENABLED", True),
-            auto_enabled=_flag("SIH_AUTO_ROUTING_ENABLED", True),
-            general_model=_model("SIH_GENERAL_MODEL", fallback),
-            document_model=_model("SIH_DOCUMENT_MODEL", fallback),
-            rag_model=_model("SIH_RAG_MODEL", fallback),
-            agent_model=_model("SIH_AGENT_MODEL", fallback),
-            agent_enabled=_flag("SIH_AGENT_ENABLED", True),
+            enabled=_flag("LOCAL_AI_ROUTING_ENABLED", True),
+            auto_enabled=_flag("LOCAL_AI_AUTO_ROUTING_ENABLED", True),
+            general_model=_model("LOCAL_AI_GENERAL_MODEL", fallback),
+            document_model=_model("LOCAL_AI_DOCUMENT_MODEL", fallback),
+            rag_model=_model("LOCAL_AI_RAG_MODEL", fallback),
+            agent_model=_model("LOCAL_AI_AGENT_MODEL", fallback),
+            agent_enabled=_flag("LOCAL_AI_AGENT_ENABLED", True),
         )

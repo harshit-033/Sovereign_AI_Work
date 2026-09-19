@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
-import fitz
+import pymupdf
 
 from .models import ToolExecutionResult, VerificationResult
 
@@ -34,7 +34,7 @@ class VerificationService:
                 if result.tool_id == "generate_pdf" and passed:
                     passed = path.read_bytes()[:5] == b"%PDF-"
                     if passed:
-                        with fitz.open(str(path)) as pdf:
+                        with pymupdf.open(str(path)) as pdf:
                             text = "\n".join(page.get_text() for page in pdf)
                             passed = len(pdf) >= 1 and bool(pdf[0].get_text().strip()) and all(marker in text for marker in markers)
                 message = "Generated file verified." if passed else "Generated file verification failed."

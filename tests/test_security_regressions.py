@@ -29,7 +29,7 @@ def login(client: TestClient, username: str, password: str) -> tuple[str, str]:
 def test_auth_transport_and_headers():
     client = TestClient(app)
     token, session_id = login(client, "user1", USER1_PASSWORD)
-    cookie = client.cookies.get("sih_session")
+    cookie = client.cookies.get("local_ai_session")
     assert cookie == token
     set_cookie = client.post(
         "/api/auth/login",

@@ -42,6 +42,13 @@
       "name": "General",
       "created_at": 1788545895.4339743,
       "updated_at": 1788545895.433975
+    },
+    {
+      "collection_id": "col_9a31a8191bcf4da6",
+      "owner_user_id": "usr_a61f1ae74775",
+      "name": "collection_demo",
+      "created_at": 1789211793.8737972,
+      "updated_at": 1789211793.8737981
     }
   ],
   "documents": [
@@ -264,6 +271,72 @@
       "indexing_version": "phase5-v1",
       "failure_reason": null,
       "source_path": "C:\\Users\\harsh\\OneDrive\\Desktop\\SIH 2026\\SIH_PROJECT_1\\data\\rag\\documents\\doc_4131301928ba42b4ad42e7a35cc4ce0f.pdf"
+    },
+    {
+      "document_id": "doc_79942d6f1b594d2e828407c2a7ebcf30",
+      "owner_user_id": "usr_a61f1ae74775",
+      "collection_id": "col_feae8b36ded244a2",
+      "filename": "agent_summary.pdf",
+      "file_hash": "2ce021a8009c825524b0247043874c9a543b1fa47f390da9a1d536071fa6dbcc",
+      "page_count": 3,
+      "status": "INDEXED",
+      "created_at": 1789108343.35918,
+      "updated_at": 1789108372.6067085,
+      "extracted_chars": 1335,
+      "file_size_mb": 0.0,
+      "extraction_seconds": 1.32,
+      "native_pages": 1,
+      "ocr_pages": 0,
+      "method_summary": "native: 1 pages",
+      "embedding_model": "nomic-embed-text:latest",
+      "chunk_count": 2,
+      "indexing_version": "phase5-v1",
+      "failure_reason": null,
+      "source_path": "C:\\Users\\harsh\\OneDrive\\Desktop\\PROJECTS\\SIH 2026\\SIH_PROJECT_1\\data\\rag\\documents\\doc_79942d6f1b594d2e828407c2a7ebcf30.pdf"
+    },
+    {
+      "document_id": "doc_4a761922ca4d4da1aaa91c300ce71acb",
+      "owner_user_id": "usr_a61f1ae74775",
+      "collection_id": "col_9a31a8191bcf4da6",
+      "filename": "My_Resume.pdf",
+      "file_hash": "29e5700d4f04b553c4897bc5e4dfcb8380da80a54af7a6c0195de81b998713c5",
+      "page_count": 1,
+      "status": "INDEXED",
+      "created_at": 1789211810.8304787,
+      "updated_at": 1789212105.3868787,
+      "extracted_chars": 3243,
+      "file_size_mb": 0.09,
+      "extraction_seconds": 0.01,
+      "native_pages": 1,
+      "ocr_pages": 0,
+      "method_summary": "native: 1 pages",
+      "embedding_model": "nomic-embed-text:latest",
+      "chunk_count": 4,
+      "indexing_version": "phase5-v1",
+      "failure_reason": null,
+      "source_path": "C:\\Users\\harsh\\OneDrive\\Desktop\\PROJECTS\\SIH 2026\\SIH_PROJECT_1\\data\\rag\\documents\\doc_4a761922ca4d4da1aaa91c300ce71acb.pdf"
+    },
+    {
+      "document_id": "doc_8d124b66d3024366b1a48a8f62886fe5",
+      "owner_user_id": "usr_a61f1ae74775",
+      "collection_id": "col_9a31a8191bcf4da6",
+      "filename": "agent_summary-3.pdf",
+      "file_hash": "10ddaa9723fc25951855534633f2e7df9e26bfad40257702e8adfb49f9c2390f",
+      "page_count": 2,
+      "status": "INDEXED",
+      "created_at": 1789211821.2034628,
+      "updated_at": 1789212103.039765,
+      "extracted_chars": 6048,
+      "file_size_mb": 0.02,
+      "extraction_seconds": 0.01,
+      "native_pages": 2,
+      "ocr_pages": 0,
+      "method_summary": "native: 2 pages",
+      "embedding_model": "nomic-embed-text:latest",
+      "chunk_count": 7,
+      "indexing_version": "phase5-v1",
+      "failure_reason": null,
+      "source_path": "C:\\Users\\harsh\\OneDrive\\Desktop\\PROJECTS\\SIH 2026\\SIH_PROJECT_1\\data\\rag\\documents\\doc_8d124b66d3024366b1a48a8f62886fe5.pdf"
     }
   ]
 }

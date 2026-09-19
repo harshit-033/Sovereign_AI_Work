@@ -90,10 +90,10 @@ def test_model_mapping_is_separate_from_capability():
     with patch.dict(
         os.environ,
         {
-            "SIH_MODEL_NAME": "fallback-model",
-            "SIH_GENERAL_MODEL": "general-model",
-            "SIH_DOCUMENT_MODEL": "document-model",
-            "SIH_RAG_MODEL": "rag-model",
+            "LOCAL_AI_MODEL_NAME": "fallback-model",
+            "LOCAL_AI_GENERAL_MODEL": "general-model",
+            "LOCAL_AI_DOCUMENT_MODEL": "document-model",
+            "LOCAL_AI_RAG_MODEL": "rag-model",
         },
         clear=False,
     ):

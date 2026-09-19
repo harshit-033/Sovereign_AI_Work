@@ -6,7 +6,7 @@ Status: **COMPLETE**, with the dependency advisory noted in the security section
 
 ## Executive Summary
 
-The existing SIH Local AI Workbench now has an additive, browser-first local RAG capability. It reuses the existing PyMuPDF plus Tesseract `PageBlock` pipeline, chunks each page with provenance, embeds locally through Ollama, persists vectors in ChromaDB, filters retrieval by authenticated owner and collection, and streams grounded answers with trusted source metadata. General Chat, direct Document Analysis, Tkinter, authentication, RBAC, queueing, and existing SSE behavior remain available.
+The existing Local AI Workbench now has an additive, browser-first local RAG capability. It reuses the existing PyMuPDF plus Tesseract `PageBlock` pipeline, chunks each page with provenance, embeds locally through Ollama, persists vectors in ChromaDB, filters retrieval by authenticated owner and collection, and streams grounded answers with trusted source metadata. General Chat, direct Document Analysis, Tkinter, authentication, RBAC, queueing, and existing SSE behavior remain available.
 
 Post-implementation checks passed for the real local embedding model, Chroma persistence after reopen, indexing/deletion/re-indexing, duplicate handling, prompt-injection defense, cross-user isolation, the complete existing regression suite, and the browser-rendered controls.
 
@@ -71,7 +71,7 @@ Added:
 
 Existing dependencies were retained. No cloud AI SDK, hosted embedding service, PostgreSQL driver, ORM, or external vector service was added.
 
-The selected embedding model is the configurable local Ollama model `nomic-embed-text:latest`. The existing chat model remains independently configurable as `SIH_MODEL_NAME`, defaulting to `llama3.2:latest`.
+The selected embedding model is the configurable local Ollama model `nomic-embed-text:latest`. The existing chat model remains independently configurable as `LOCAL_AI_MODEL_NAME`, defaulting to `llama3.2:latest`.
 
 The verified local embedding model returned 768-dimensional vectors.
 
@@ -92,19 +92,19 @@ Logical records:
 - Document: ID, owner ID, collection ID, sanitized filename, SHA-256, page count, status, timestamps, extraction statistics, embedding model, chunk count, version, and bounded failure reason.
 - Chunk: chunk/document/owner/collection IDs, filename, page, chunk index, extraction method, text, indexing version, and indexing timestamp.
 
-Internal source paths are never returned by the API. The account store remains outside the repository under `%LOCALAPPDATA%\SIHLocalAI\users.json`.
+Internal source paths are never returned by the API. The account store remains outside the repository under `%LOCALAPPDATA%\LocalAIWorkbench\users.json`.
 
 ## Configuration
 
 | Variable | Default | Purpose |
 | :--- | :--- | :--- |
-| `SIH_RAG_ENABLED` | `1` | Enable or disable Knowledge Chat |
-| `SIH_EMBED_MODEL` | `nomic-embed-text:latest` | Local Ollama embedding model |
-| `SIH_RAG_TOP_K` | `8` | Retrieved chunks, maximum `20` |
-| `SIH_RAG_CHUNK_SIZE` | `1200` | Target chunk size in characters |
-| `SIH_RAG_CHUNK_OVERLAP` | `180` | Overlap in characters |
-| `SIH_RAG_CONTEXT_LIMIT` | `12000` | Maximum retrieved context sent to the LLM |
-| `SIH_RAG_STORAGE_PATH` | `data/rag` | Persistent local RAG root |
+| `LOCAL_AI_RAG_ENABLED` | `1` | Enable or disable Knowledge Chat |
+| `LOCAL_AI_EMBED_MODEL` | `nomic-embed-text:latest` | Local Ollama embedding model |
+| `LOCAL_AI_RAG_TOP_K` | `8` | Retrieved chunks, maximum `20` |
+| `LOCAL_AI_RAG_CHUNK_SIZE` | `1200` | Target chunk size in characters |
+| `LOCAL_AI_RAG_CHUNK_OVERLAP` | `180` | Overlap in characters |
+| `LOCAL_AI_RAG_CONTEXT_LIMIT` | `12000` | Maximum retrieved context sent to the LLM |
+| `LOCAL_AI_RAG_STORAGE_PATH` | `data/rag` | Persistent local RAG root |
 
 ## Processing And Retrieval
 
@@ -112,7 +112,7 @@ Indexing reuses `DocumentService.process_pdf`; there is no second OCR implementa
 
 The service computes a SHA-256 fingerprint. The same owner, collection, and file hash reuses the existing document ID and re-indexes it with the new filename/content metadata instead of creating duplicate vectors. Index states are `PENDING`, `INDEXING`, `INDEXED`, and `FAILED`. Failed indexing rolls back vectors and persists a bounded reason for retry or deletion.
 
-Retrieval embeds the question locally, applies owner and optional owner-owned collection filters in ChromaDB, then performs a metadata ownership/status check before returning chunks. Context is built only from the authorized top-K chunks and is bounded by `SIH_RAG_CONTEXT_LIMIT`.
+Retrieval embeds the question locally, applies owner and optional owner-owned collection filters in ChromaDB, then performs a metadata ownership/status check before returning chunks. Context is built only from the authorized top-K chunks and is bounded by `LOCAL_AI_RAG_CONTEXT_LIMIT`.
 
 The prompt explicitly treats retrieved PDF text as untrusted evidence. The model is told not to follow document instructions, invent facts, or invent filenames/pages. Sources are rendered from retrieval metadata, not generated by the model.
 
@@ -225,7 +225,7 @@ ollama pull nomic-embed-text
 .\.venv\Scripts\python.exe run_server.py
 ~~~
 
-Open `http://localhost:8000`, sign in, select Knowledge Chat, create/select a collection, index a PDF, wait for `INDEXED`, and ask a question. Run `app.py` for the existing Tkinter desktop client. For a missing embedding model, run `ollama pull nomic-embed-text` or the command named by `/health`. Set `SIH_RAG_ENABLED=0` to disable RAG while retaining General Chat and direct Document Analysis.
+Open `http://localhost:8000`, sign in, select Knowledge Chat, create/select a collection, index a PDF, wait for `INDEXED`, and ask a question. Run `app.py` for the existing Tkinter desktop client. For a missing embedding model, run `ollama pull nomic-embed-text` or the command named by `/health`. Set `LOCAL_AI_RAG_ENABLED=0` to disable RAG while retaining General Chat and direct Document Analysis.
 
 ## Acceptance Checklist
 

@@ -80,7 +80,7 @@ class CapabilityRouter:
 
     def route(self, context: RoutingContext) -> RoutingDecision:
         if not self.config.enabled:
-            raise RouterDisabledError("Capability routing is disabled. Set SIH_ROUTING_ENABLED=1.")
+            raise RouterDisabledError("Capability routing is disabled. Set LOCAL_AI_ROUTING_ENABLED=1.")
         started = time.perf_counter()
         mode = self._normalize_mode(context.selected_mode)
         if mode != "auto":

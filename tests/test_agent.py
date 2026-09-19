@@ -73,7 +73,7 @@ def test_calculate_and_outputs_are_verified_and_session_scoped():
     sessions = SessionManager()
     owner = sessions.create_session("user-a", "a", UserRole.USER)
     other = sessions.create_session("user-b", "b", UserRole.USER)
-    with tempfile.TemporaryDirectory(prefix="sih_agent_outputs_") as root:
+    with tempfile.TemporaryDirectory(prefix="local_ai_agent_outputs_") as root:
         service = AgentService(sessions, type("Rag", (), {"require_collection": lambda *_: None})(), type("Docs", (), {})(), root, AgentConfig())
         task = service.new_task(owner.session_id, "user-a", "user", "Calculate the average of 82, 86, and 84 and save as a text report")
         context, plan = service.plan(task, None, None)
@@ -103,7 +103,7 @@ def test_search_workflow_can_generate_a_verified_pdf_without_model_calls():
         def retrieve(self, *_args):
             return []
 
-    with tempfile.TemporaryDirectory(prefix="sih_agent_pdf_") as root:
+    with tempfile.TemporaryDirectory(prefix="local_ai_agent_pdf_") as root:
         service = AgentService(sessions, EmptyRag(), type("Docs", (), {})(), root, AgentConfig())
         task = service.new_task(session.session_id, "user-a", "user", "search my reports and create a pdf summary")
         context, plan = service.plan(task, None, None)
@@ -151,7 +151,7 @@ def test_approval_gate_requires_and_honors_human_decision():
 
 
 def test_output_manager_rejects_traversal_and_verifies_pdf_signature():
-    with tempfile.TemporaryDirectory(prefix="sih_agent_files_") as root:
+    with tempfile.TemporaryDirectory(prefix="local_ai_agent_files_") as root:
         manager = AgentOutputManager(root)
         try:
             manager.generate_txt("session-a", "..\\escape.txt", "x")
@@ -165,7 +165,7 @@ def test_output_manager_rejects_traversal_and_verifies_pdf_signature():
 
 
 def test_pdf_layout_preserves_short_and_long_report_content_without_blank_pages():
-    with tempfile.TemporaryDirectory(prefix="sih_agent_pdf_quality_") as root:
+    with tempfile.TemporaryDirectory(prefix="local_ai_agent_pdf_quality_") as root:
         manager = AgentOutputManager(root)
         short = manager.generate_pdf("session-a", "short.pdf", "INSPECTION SUMMARY\n\nKey Findings\n1. Pump A17 was inspected.\n\nSources\n1. report.pdf - Page 2")
         short_path = manager.resolve(short["output_id"], "session-a")

@@ -1,1 +1,1 @@
-"""SIH Local AI Workbench HTTP API Server."""
+"""Local AI Workbench HTTP API Server."""

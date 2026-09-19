@@ -38,7 +38,7 @@ class LocalLLMChatApp(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
 
-        self.title("SIH Local AI Workbench")
+        self.title("Local AI Workbench")
         self.geometry("1040x720")
         self.minsize(820, 560)
 
@@ -118,7 +118,7 @@ class LocalLLMChatApp(tk.Tk):
         header.grid(row=0, column=0, sticky="ew")
         header.grid_columnconfigure(0, weight=1)
 
-        ttk.Label(header, text="SIH Local AI Workbench", style="Title.TLabel").pack(
+        ttk.Label(header, text="Local AI Workbench", style="Title.TLabel").pack(
             anchor=tk.W
         )
         ttk.Label(
@@ -606,7 +606,7 @@ def main() -> None:
         app = LocalLLMChatApp()
         app.mainloop()
     except tk.TclError as exc:
-        messagebox.showerror("SIH Local AI Workbench", str(exc))
+        messagebox.showerror("Local AI Workbench", str(exc))
 
 
 if __name__ == "__main__":

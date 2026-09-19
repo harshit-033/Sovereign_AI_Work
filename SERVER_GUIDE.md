@@ -1,4 +1,4 @@
-# SIH Local AI Workbench Server Guide
+# Local AI Workbench Server Guide
 
 This guide covers the multi-client FastAPI server, browser authentication, RBAC, local inference, OCR, local RAG, and secure LAN operation.
 
@@ -33,7 +33,7 @@ The Windows host runs the complete processing pipeline:
 - The RAG layer chunks those same `PageBlock` records, embeds them through local Ollama, and persists vectors in ChromaDB.
 - An inference queue protects host capacity when several clients submit work.
 - Each login receives an isolated in-memory session, document list, chat history, and upload directory.
-- Accounts are stored at `%LOCALAPPDATA%\SIHLocalAI\users.json`, outside the repository.
+- Accounts are stored at `%LOCALAPPDATA%\LocalAIWorkbench\users.json`, outside the repository.
 - Knowledge-base source files and metadata persist below `data/rag` by default and are filtered by owner before retrieval.
 
 ## First Start
@@ -48,8 +48,8 @@ Install dependencies and start the server from the project root:
 On a fresh installation the terminal displays a generated initial admin password once. There are no demo users or reusable default passwords. To choose the first credentials, set these variables before the first run:
 
 ```powershell
-$env:SIH_BOOTSTRAP_ADMIN_USERNAME = "admin"
-$env:SIH_BOOTSTRAP_ADMIN_PASSWORD = "Use-A-Long-Unique-Password"
+$env:LOCAL_AI_BOOTSTRAP_ADMIN_USERNAME = "admin"
+$env:LOCAL_AI_BOOTSTRAP_ADMIN_PASSWORD = "Use-A-Long-Unique-Password"
 .\.venv\Scripts\python.exe run_server.py
 ```
 
@@ -58,14 +58,14 @@ Open `http://localhost:8000` on the host. The launcher prints the detected priva
 If detection falls back to `127.0.0.1`, set the active adapter address explicitly before starting:
 
 ```powershell
-$env:SIH_LAN_IP = "192.168.1.23"
+$env:LOCAL_AI_LAN_IP = "192.168.1.23"
 .\.venv\Scripts\python.exe run_server.py
 ```
 
 The server binds to `0.0.0.0` by default. If the correct LAN URL still does not open remotely, allow TCP port 8000 through Windows Firewall for the Private profile from an Administrator PowerShell:
 
 ```powershell
-New-NetFirewallRule -DisplayName "SIH Local AI Workbench 8000" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private
+New-NetFirewallRule -DisplayName "Local AI Workbench 8000" -Direction Inbound -Protocol TCP -LocalPort 8000 -Action Allow -Profile Private
 ```
 
 ## Client Use
@@ -116,9 +116,9 @@ HTTP exposes credentials and content to devices that can observe the network. Us
 Direct TLS configuration:
 
 ```powershell
-$env:SIH_TLS_CERT_FILE = "C:\certs\server.crt"
-$env:SIH_TLS_KEY_FILE = "C:\certs\server.key"
-$env:SIH_COOKIE_SECURE = "1"
+$env:LOCAL_AI_TLS_CERT_FILE = "C:\certs\server.crt"
+$env:LOCAL_AI_TLS_KEY_FILE = "C:\certs\server.key"
+$env:LOCAL_AI_COOKIE_SECURE = "1"
 .\.venv\Scripts\python.exe run_server.py
 ```
 
@@ -128,42 +128,42 @@ The launcher refuses a partial TLS configuration. Keep certificate private keys 
 
 | Environment variable | Description |
 | :--- | :--- |
-| `SIH_MODEL_NAME` | Ollama model; default `llama3.2:latest` |
-| `SIH_ROUTING_ENABLED` | Enable capability routing; default `1` |
-| `SIH_AUTO_ROUTING_ENABLED` | Enable Auto mode; default `1` |
-| `SIH_GENERAL_MODEL` | Model for General Chat; falls back to `SIH_MODEL_NAME` |
-| `SIH_DOCUMENT_MODEL` | Model for Document Analysis; falls back to `SIH_MODEL_NAME` |
-| `SIH_RAG_MODEL` | Model for Knowledge RAG; falls back to `SIH_MODEL_NAME` |
-| `SIH_SERVER_HOST` | Bind host; default `0.0.0.0` |
-| `SIH_SERVER_PORT` | TCP port; default `8000` |
-| `SIH_LAN_IP` | Explicit private LAN IPv4 override when auto-detection is unavailable |
-| `SIH_ENABLE_API_DOCS=1` | Enables `/docs` and `/openapi.json` |
-| `SIH_USER_STORE_PATH` | Overrides the local account file |
-| `SIH_UPLOAD_DIR` | Overrides temporary upload storage |
-| `SIH_TLS_CERT_FILE` | TLS certificate path |
-| `SIH_TLS_KEY_FILE` | TLS private key path |
-| `SIH_COOKIE_SECURE=1` | Forces the Secure cookie flag |
-| `SIH_RAG_ENABLED` | Enable/disable the persistent knowledge base; default `1` |
-| `SIH_EMBED_MODEL` | Local Ollama embedding model; default `nomic-embed-text:latest` |
-| `SIH_RAG_TOP_K` | Retrieved chunk limit; default `8`, maximum `20` |
-| `SIH_RAG_CHUNK_SIZE` | Chunk target characters; default `1200` |
-| `SIH_RAG_CHUNK_OVERLAP` | Chunk overlap characters; default `180` |
-| `SIH_RAG_CONTEXT_LIMIT` | Maximum retrieved prompt context; default `12000` |
-| `SIH_RAG_STORAGE_PATH` | RAG root; default project `data/rag` |
-| `SIH_AGENT_MODEL` | Model name advertised for Agent Task; default `llama3.2:latest` |
-| `SIH_AGENT_ENABLED` | Enable Agent Task; default `1` |
-| `SIH_AGENT_MAX_STEPS` | Maximum planned steps; default `8` |
-| `SIH_AGENT_MAX_TOOL_CALLS` | Maximum tool calls; default `12` |
-| `SIH_AGENT_MAX_EXECUTION_SECONDS` | Maximum runtime; default `120` |
-| `SIH_AGENT_MAX_OUTPUT_CHARS` | Maximum report content; default `32000` |
-| `SIH_AGENT_MAX_FILE_BYTES` | Maximum generated file size; default `2000000` |
-| `SIH_AGENT_OUTPUT_DIR` | Agent output root; default project `data/agent_outputs` |
+| `LOCAL_AI_MODEL_NAME` | Ollama model; default `llama3.2:latest` |
+| `LOCAL_AI_ROUTING_ENABLED` | Enable capability routing; default `1` |
+| `LOCAL_AI_AUTO_ROUTING_ENABLED` | Enable Auto mode; default `1` |
+| `LOCAL_AI_GENERAL_MODEL` | Model for General Chat; falls back to `LOCAL_AI_MODEL_NAME` |
+| `LOCAL_AI_DOCUMENT_MODEL` | Model for Document Analysis; falls back to `LOCAL_AI_MODEL_NAME` |
+| `LOCAL_AI_RAG_MODEL` | Model for Knowledge RAG; falls back to `LOCAL_AI_MODEL_NAME` |
+| `LOCAL_AI_SERVER_HOST` | Bind host; default `0.0.0.0` |
+| `LOCAL_AI_SERVER_PORT` | TCP port; default `8000` |
+| `LOCAL_AI_LAN_IP` | Explicit private LAN IPv4 override when auto-detection is unavailable |
+| `LOCAL_AI_ENABLE_API_DOCS=1` | Enables `/docs` and `/openapi.json` |
+| `LOCAL_AI_USER_STORE_PATH` | Overrides the local account file |
+| `LOCAL_AI_UPLOAD_DIR` | Overrides temporary upload storage |
+| `LOCAL_AI_TLS_CERT_FILE` | TLS certificate path |
+| `LOCAL_AI_TLS_KEY_FILE` | TLS private key path |
+| `LOCAL_AI_COOKIE_SECURE=1` | Forces the Secure cookie flag |
+| `LOCAL_AI_RAG_ENABLED` | Enable/disable the persistent knowledge base; default `1` |
+| `LOCAL_AI_EMBED_MODEL` | Local Ollama embedding model; default `nomic-embed-text:latest` |
+| `LOCAL_AI_RAG_TOP_K` | Retrieved chunk limit; default `8`, maximum `20` |
+| `LOCAL_AI_RAG_CHUNK_SIZE` | Chunk target characters; default `1200` |
+| `LOCAL_AI_RAG_CHUNK_OVERLAP` | Chunk overlap characters; default `180` |
+| `LOCAL_AI_RAG_CONTEXT_LIMIT` | Maximum retrieved prompt context; default `12000` |
+| `LOCAL_AI_RAG_STORAGE_PATH` | RAG root; default project `data/rag` |
+| `LOCAL_AI_AGENT_MODEL` | Model name advertised for Agent Task; default `llama3.2:latest` |
+| `LOCAL_AI_AGENT_ENABLED` | Enable Agent Task; default `1` |
+| `LOCAL_AI_AGENT_MAX_STEPS` | Maximum planned steps; default `8` |
+| `LOCAL_AI_AGENT_MAX_TOOL_CALLS` | Maximum tool calls; default `12` |
+| `LOCAL_AI_AGENT_MAX_EXECUTION_SECONDS` | Maximum runtime; default `120` |
+| `LOCAL_AI_AGENT_MAX_OUTPUT_CHARS` | Maximum report content; default `32000` |
+| `LOCAL_AI_AGENT_MAX_FILE_BYTES` | Maximum generated file size; default `2000000` |
+| `LOCAL_AI_AGENT_OUTPUT_DIR` | Agent output root; default project `data/agent_outputs` |
 
 ## Agent Task
 
 Agent Task adds deterministic local workflows on top of the Phase 6 capability router. The browser has an explicit `Agent Task` mode, and Auto selects it only for clear multi-operation requests. Normal conversational, selected-document, and knowledge-base questions keep their existing handlers.
 
-The registry contains only these tools: `search_knowledge`, `list_documents`, `get_document_metadata`, `retrieve_document_information`, `calculate`, `generate_txt`, and `generate_pdf`. No shell, command prompt, arbitrary Python, `eval`, `exec`, subprocess, network, browser, installer, or unrestricted filesystem tool is registered. Every call passes schema validation and the session/user policy boundary before execution. The planner is deterministic and bounded by `SIH_AGENT_MAX_STEPS`; execution is bounded by tool-call count and runtime.
+The registry contains only these tools: `search_knowledge`, `list_documents`, `get_document_metadata`, `retrieve_document_information`, `calculate`, `generate_txt`, and `generate_pdf`. No shell, command prompt, arbitrary Python, `eval`, `exec`, subprocess, network, browser, installer, or unrestricted filesystem tool is registered. Every call passes schema validation and the session/user policy boundary before execution. The planner is deterministic and bounded by `LOCAL_AI_AGENT_MAX_STEPS`; execution is bounded by tool-call count and runtime.
 
 Agent progress is available over SSE as `agent_started`, `plan_created`, `tool_started`, `tool_completed`, `verification_completed`, `approval_required`, and `final_result`. TXT output is read back as UTF-8, PDF output is checked for a `%PDF-` signature, and downloads resolve through an opaque output ID scoped to the authenticated session. Output files live under one directory per session and are cleaned on clear/logout.
 
@@ -216,7 +216,7 @@ PDF output uses explicit line wrapping and page placement to avoid blank leading
 | `GET` | `/api/agent/audit` | Authenticated, current session/user only |
 | `GET` | `/api/agent/outputs/{output_id}` | Authenticated, owning session only |
 
-API documentation is disabled unless `SIH_ENABLE_API_DOCS=1` is set before startup.
+API documentation is disabled unless `LOCAL_AI_ENABLE_API_DOCS=1` is set before startup.
 
 ## Limits And Cleanup
 
@@ -255,7 +255,7 @@ Install the embedding model once before indexing:
 ollama pull nomic-embed-text
 ```
 
-If the model is missing, the health endpoint and Knowledge Chat report the configured model and the exact pull command. Set `SIH_RAG_ENABLED=0` to disable RAG without affecting General Chat or direct Document Analysis.
+If the model is missing, the health endpoint and Knowledge Chat report the configured model and the exact pull command. Set `LOCAL_AI_RAG_ENABLED=0` to disable RAG without affecting General Chat or direct Document Analysis.
 
 ## RAG Security And Citations
 

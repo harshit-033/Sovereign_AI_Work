@@ -1,4 +1,4 @@
-# SIH Milestone 3 - Local OCR For Scanned PDFs
+# Milestone 3 - Local OCR For Scanned PDFs
 
 ## Implemented
 

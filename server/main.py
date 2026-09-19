@@ -56,17 +56,17 @@ from routing import (
 from agent import AgentConfig, AgentService
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-logger = logging.getLogger("sih_server")
+logger = logging.getLogger("local_ai_server")
 
-AUTH_COOKIE_NAME = "sih_session"
+AUTH_COOKIE_NAME = "local_ai_session"
 MAX_CHAT_CHARS = 8_000
 MAX_GENERATED_CHARS = 64_000
 MAX_UPLOAD_BYTES = MAX_PDF_SIZE_MB * 1024 * 1024
 UPLOAD_CHUNK_BYTES = 1024 * 1024
-API_DOCS_ENABLED = os.getenv("SIH_ENABLE_API_DOCS", "0") == "1"
+API_DOCS_ENABLED = os.getenv("LOCAL_AI_ENABLE_API_DOCS", "0") == "1"
 
 app = FastAPI(
-    title="SIH Local AI Workbench Server",
+    title="Local AI Workbench Server",
     description="Multi-client local AI server with document OCR and RBAC",
     version="3.0.0",
     docs_url="/docs" if API_DOCS_ENABLED else None,
@@ -93,13 +93,13 @@ async def add_security_headers(request: Request, call_next):
 
 
 def _default_user_store_path() -> Path:
-    configured = os.getenv("SIH_USER_STORE_PATH")
+    configured = os.getenv("LOCAL_AI_USER_STORE_PATH")
     if configured:
         return Path(configured).resolve()
     local_data = os.getenv("LOCALAPPDATA")
     if not local_data:
         return (PROJECT_ROOT / "data" / "users.json").resolve()
-    target = (Path(local_data) / "SIHLocalAI" / "users.json").resolve()
+    target = (Path(local_data) / "LocalAIWorkbench" / "users.json").resolve()
     legacy = PROJECT_ROOT / "data" / "users.json"
     if not target.exists() and legacy.is_file():
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -112,9 +112,9 @@ user_store_path = _default_user_store_path()
 user_store = UserStore(storage_path=user_store_path)
 auth_service = AuthService(user_store=user_store)
 login_limiter = LoginAttemptLimiter()
-ai_service = AIService(model_name=os.getenv("SIH_MODEL_NAME", "llama3.2:latest"))
+ai_service = AIService(model_name=os.getenv("LOCAL_AI_MODEL_NAME", "llama3.2:latest"))
 doc_service = DocumentService()
-file_handler = FileHandler(base_upload_dir=os.getenv("SIH_UPLOAD_DIR", str(PROJECT_ROOT / "uploads")))
+file_handler = FileHandler(base_upload_dir=os.getenv("LOCAL_AI_UPLOAD_DIR", str(PROJECT_ROOT / "uploads")))
 session_manager = SessionManager()
 request_queue = RequestQueue(max_concurrent_inference=1)
 monitoring_service = MonitoringService()
@@ -126,7 +126,7 @@ agent_service = AgentService(
     session_manager,
     rag_service,
     doc_service,
-    os.getenv("SIH_AGENT_OUTPUT_DIR", str(PROJECT_ROOT / "data" / "agent_outputs")),
+    os.getenv("LOCAL_AI_AGENT_OUTPUT_DIR", str(PROJECT_ROOT / "data" / "agent_outputs")),
     config=AgentConfig.from_env(),
 )
 
@@ -508,7 +508,7 @@ async def login(creds: LoginRequest, request: Request, response: Response):
         max_age=auth_service.token_ttl_seconds,
         httponly=True,
         samesite="strict",
-        secure=os.getenv("SIH_COOKIE_SECURE", "0") == "1" or request.url.scheme == "https",
+        secure=os.getenv("LOCAL_AI_COOKIE_SECURE", "0") == "1" or request.url.scheme == "https",
         path="/",
     )
     return {
@@ -1302,4 +1302,4 @@ async def serve_index():
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
         return HTMLResponse(content=index_file.read_text(encoding="utf-8"))
-    return HTMLResponse("<h1>SIH Local AI Workbench Server is Running</h1>")
+    return HTMLResponse("<h1>Local AI Workbench Server is Running</h1>")
